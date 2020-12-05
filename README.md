@@ -6,7 +6,7 @@ Astro Scripting (short: ASX), is a simple scripting language interpreted in pyth
 
 - wait seconds              |-> takes one parameter (seconds) waits / pauses the program for the given time. 
 
-                            |->                                   func-name  |  func-params
+‎                           |->                                 func-name  |  func-params
 - #function_name():         |-> creation of a function, usage: #function_name(): <-(:) = end of func declaration
       #function_content     |->                                ^function-syntax(#)
       
