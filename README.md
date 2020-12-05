@@ -14,7 +14,7 @@ Astro Scripting (short: ASX), is a simple scripting language interpreted in pyth
 Comment2                    |-> Creation of multi-line comment;                    
 Comment3--/               
 
-string_variable = "string variable content"         |-> string variable declaration and definition
-integer_variable = 7                                |-> integer variable decleration and definition
-boolean_variable = True // boolean_variable = False |-> boolean variable decleration and definition
-a_list = 1, 2, 3                                    |-> list variable declaration and definition
+- string_variable = "string variable content"         |-> string variable declaration and definition
+- integer_variable = 7                                |-> integer variable decleration and definition
+- boolean_variable = True // boolean_variable = False |-> boolean variable decleration and definition
+- a_list = 1, 2, 3                                    |-> list variable declaration and definition
