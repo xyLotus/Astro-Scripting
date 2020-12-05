@@ -10,10 +10,10 @@ Astro Scripting (short: ASX), is a simple scripting language interpreted in pyth
       
 --Comment / -- Comment      |-> creation of comment; Syntax : -- 
 
-/-- Comment1                |-> "       
+/-- Comment1                    
 Comment2                    |-> Creation of multi-line comment; 
 Comment3                    |-> Syntax : /-- --/ 
-Comment4 --/                |-> "
+Comment4 --/               
 
 string_variable = "string variable content"         |-> string variable declaration and definition
 integer_variable = 7                                |-> integer variable decleration and definition
