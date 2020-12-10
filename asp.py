@@ -17,8 +17,8 @@ a module, just use the parse function.
 import llx
 import re
 
-__author__ = 'bellrise'
-__version__ = 0.3
+__author__  = 'bellrise'
+__version__ = '0.3.1'
 
 # This is the format version of the code object generated
 # by the parser, each new format is most probably incompatible
@@ -126,7 +126,7 @@ class _Parser:
             return {
                 'type': 'call',
                 'name': func[0],
-                'args': self.parse_data(params)
+                'args': self.parse_data(' '.join(func[1]))
             }
 
         # Assignment
