@@ -10,13 +10,15 @@ a module, just use the parse function.
       an assignment type
     - changed the line comment from `//` to `--`
 
+  * 0.3
+    - minor bugfix, could not read a statement without params
 
 """
 import llx
 import re
 
 __author__ = 'bellrise'
-__version__ = 0.2
+__version__ = 0.3
 
 # This is the format version of the code object generated
 # by the parser, each new format is most probably incompatible
@@ -97,6 +99,7 @@ class _Parser:
             return 'num', float(string)
         except ValueError:
             pass
+
         # Test for variable
         if re.match(r'[a-zA-Z_\d]', string):
             return 'var', string
@@ -107,7 +110,7 @@ class _Parser:
         # Parses the data struct, returns a different data
         # structure depending on the complexity of the
         # data given.
-        dat = [self.classify_type(s.strip()) for s in dat.split(',')]
+        dat = [self.classify_type(s.strip()) for s in dat.split(',') if s]
         return dat
 
     def parse_statement(self, st: str):
@@ -115,7 +118,7 @@ class _Parser:
         if len(st.split()) > 1:
             ins, params = st.split(maxsplit=1)
         else:
-            ins, params = "", ""
+            ins, params = st, ""
 
         # Function call
         if re.match(r'^.*\(.*\).*', st):
@@ -123,7 +126,7 @@ class _Parser:
             return {
                 'type': 'call',
                 'name': func[0],
-                'args': self.parse_data(','.join(func[1]))
+                'args': self.parse_data(params)
             }
 
         # Assignment
