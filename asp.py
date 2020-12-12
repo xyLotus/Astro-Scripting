@@ -18,7 +18,7 @@ import llx
 import re
 
 __author__  = 'bellrise'
-__version__ = '0.3.1'
+__version__ = '0.3.2'
 
 # This is the format version of the code object generated
 # by the parser, each new format is most probably incompatible
@@ -120,6 +120,10 @@ class _Parser:
         else:
             ins, params = st, ""
 
+        # Another function, apparently
+        if re.match(r'^#[_A-z0-9]*\(.*\):', st):
+            self.err(st, 'somewhere over the rainbow', 'Funception is illegal')
+
         # Function call
         if re.match(r'^.*\(.*\).*', st):
             func = self.parse_header(''.join([ins, params]), '')
@@ -144,7 +148,7 @@ class _Parser:
             }
 
         # Any other statement
-        if not re.match(r'=', st):
+        if not re.match(r'.*=.*', st):
             return {
                 'type': 'statement',
                 'instruction': ins,
@@ -225,39 +229,47 @@ class _Parser:
 
     def collect(self):
         # Returns an object of statements and functions
+        # Basically, splits the statement and function lines.
+        # After splitting, passes the statements and functions
+        # into different functions.
         code = self.code
 
-        tab: int = -1
-        # Finding indent size
-        for i, line in enumerate(code):
-            pat = re.compile(r'^[ \t]+')
-            found = pat.search(line)
-            if found is not None and tab == -1:
-                tab = found.regs[0][1]
-            if found is None:
-                continue
-            if tab != -1 and found.regs[0][1] != tab:
-                self.err(line, i, 'Invalid tab size')
-
-        # Finds the type of the statement
-        i = 0
-        new = []
-        collection = []
-        while i < len(self.code):
-            # Normal statement
-            line = self.code[i]
-            if line.startswith('#'):
-                collection.append(line)
-            elif self.startswith_any(line, ' ', '\t'):
-                collection.append(line)
+        # Tab size
+        for index, line in enumerate(code):
+            r = re.match(r'^ +', line)
+            if r:
+                if (r.end() - r.start()) % 4 != 0:
+                    self.err(line, index, 'Invalid tab size')
+                code[index] = (int((r.end() - r.start()) / 4), line.strip())
             else:
-                if collection:
-                    new.append(self.parse_collection(collection))
-                collection = []
-                new.append(self.parse_statement(line))
+                code[index] = (0, line)
+
+        stack = []
+
+        i = 0
+        while True:
+            text = code[i][1]
+
+            # Function
+            if re.match(r'^#[_A-z0-9]*\(.*\):', text):
+                local = [text]
+                i += 1
+                while True:
+                    if code[i][0] == 1:
+                        local.append(code[i][1])
+                        i += 1
+                    else:
+                        i -= 1
+                        break
+                stack.append(self.parse_collection(local))
+            else:
+                stack.append(self.parse_statement(text))
+
+            if i == len(code) - 1:
+                break
             i += 1
 
-        return [s for s in new if s]
+        return stack
 
     def render(self):
         # Returns the code object.
