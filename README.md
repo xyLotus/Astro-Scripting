@@ -1,20 +1,48 @@
-# Astro-Scripting
-Astro Scripting (short: ASX), is a simple scripting language interpreted in python.
+# Astro scripting 0.3
+![](https://img.shields.io/tokei/lines/github/xyLotus/Astro-Scripting?label=Total%20lines)
+![](https://img.shields.io/badge/Implementation-Python%203.9-important)
 
-# Satements:
-- say "text" / say varialbe |-> takes one parameter (output) and outputs it, can output a manually given string or a variable. 
+Astro Scripting (short: ASX), is a simple, interpreted scripting language implemented in Python.
 
-- wait seconds              |-> takes one parameter (seconds) waits / pauses the program for the given time. 
 
-- #function_name():         |-> creation of a function, usage: #function_name(): <-(:) = end of func declaration
+## Syntax
+#### Variables
+Because Astro is an dynamic typed language, so you don't have to specify the types.
+```
+-- Normal variables
+var = 12
+
+-- Arrays
+array = 1, 2, 3
+```
+#### Comments
+```
+-- Single line comments
+/-- Multi
+    line
+    comments --/
+```
+
+#### Functions 
+```
+#function_name(param):
+      say "something"
+      return param
       
---Comment / -- Comment      |-> creation of comment; Syntax : -- 
 
-/--Comment1                    
-Comment2                    |-> Creation of multi-line comment;                    
-Comment3--/               
+-- Function calling
+function_name(12)
+```
 
-- string_variable = "string variable content"         |-> string variable declaration and definition
-- integer_variable = 7                                |-> integer variable decleration and definition
-- boolean_variable = True // boolean_variable = False |-> boolean variable decleration and definition
-- a_list = 1, 2, 3                                    |-> list variable declaration and definition
+
+## Statements
+* `say <data>` - outputs the passed data to stdout
+* `wait <seconds>` - waits / pausees the program for the selected time
+
+
+## Data types
+* String `"a string"`
+* Number `7.1`
+* Boolean `True` / `False`
+* Array `1, 2, "3"`
+Note: arrays can be multi-type
