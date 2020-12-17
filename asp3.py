@@ -7,7 +7,7 @@ a module, just use the parse function.
 import re
 
 __author__  = 'bellrise'
-__version__ = '3.0'
+__version__ = '3.1.2'
 
 # This is the format version of the code object generated
 # by the parser, each new format is most probably incompatible
@@ -144,6 +144,21 @@ class _Parser:
                 lines[pos] = self.parse_import(line)
                 continue
 
+            # If statement
+            if re.match(r'^if .*:.*', text):
+                lines[pos] = self.parse_if(line)
+                continue
+
+            # Else if statement
+            if re.match(r'^elif .*:.*', text):
+                lines[pos] = self.parse_elif(line)
+                continue
+
+            # Else statement
+            if re.match(r'^else:', text):
+                lines[pos] = self.parse_else(line)
+                continue
+
             # Function header
             if re.match(r'#[_A-z][_A-z0-9]*\(.*\):', text):
                 lines[pos] = self.parse_header(line)
@@ -162,10 +177,53 @@ class _Parser:
             # Function call
             if re.match(r'^[_A-z][_A-z0-9]*\(.*\)', text):
                 lines[pos] = self.parse_call(line)
+                continue
 
-        # Recollection
+            if line[2]:
+                raise SyntaxError(f'Invalid syntax @ {line[0]}')
+
+        # Function recollection
         for function in collected:
             lines[function[0][0]-1] = self.sort_function(self.type(function))
+
+        # If statement recollection
+        found = True
+        while found:
+            found = False
+            collected = []
+
+            for index, line in enumerate(lines):
+                code = line[2]
+                if code:
+                    if code['type'] in ['if', 'else', 'elif']:
+                        found = True
+                        if_indent = line[1]
+                        cursor = index + 1
+                        while True:
+                            try:
+                                a = lines[cursor]
+                            except IndexError:
+                                break
+                            if a[1] == if_indent + 1:
+                                collected.append(a)
+                            else:
+                                break
+                            cursor += 1
+
+                        # Replacing
+
+                        d = lines[index][2]
+                        d.update({'code': collected})
+                        lines[index] = (lines[index][0], lines[index][1], d)
+
+                        for i in collected:
+                            p = i[0] - 1
+                            lines[p] = (lines[p][0], lines[p][1], '')
+
+                        collected = []
+
+                    if found:
+                        found = False
 
         return lines
 
@@ -175,6 +233,39 @@ class _Parser:
         t = header[2]
         t.update({'code': lines[1:]})
         return header[0], header[1], t
+
+    def parse_math(self, line, num):
+        """ Parses the mathematical thingy. """
+        keys = {
+            '+': 'ADD',
+            '-': 'SUB',
+            '*': 'MUL',
+            '/': 'DIV',
+            '<': 'CSM',
+            '>': 'CLG',
+            '!=': 'NOT',
+            '==': 'CEQ',
+            '<=': 'CSE',
+            '>=': 'CLE'
+        }
+
+        line = line.replace(' ', '')
+        finds = re.finditer('[^A-z\d]+', line)
+        for i in finds:
+            x = line[i.start():i.end()]
+            try:
+                line = line.replace(x, '¶' + keys[x] + '¶')
+            except KeyError:
+                raise SyntaxError(f'Invalid equation @ line {num}')
+
+        line = line.split('¶')
+        for index, i in enumerate(line):
+            try:
+                line[index] = float(i)
+            except ValueError:
+                pass
+
+        return line
 
 
     def parse_args(self, line, num):
@@ -188,9 +279,9 @@ class _Parser:
             data = []
             cursor = 0
             for i in splits:
-                data.append(self.variable(line[cursor:i]))
+                data.append(self.variable(line[cursor:i], num))
                 cursor = i+1
-            data.append(self.variable(line[cursor:]))
+            data.append(self.variable(line[cursor:], num))
 
             for i, s in enumerate(data):
                 try:
@@ -199,7 +290,7 @@ class _Parser:
                     data[i] = s
 
         else:
-            data = [self.variable(line)]
+            data = [self.variable(line, num)]
 
         return data
 
@@ -208,22 +299,76 @@ class _Parser:
         elements = self.parse_args(line[1:-1], num)
         return 'arr', elements
 
-    def variable(self, data):
-        """ Returns the proper version of the variable """
+    def variable(self, data, num):
+        """ Returns the proper version of the variable. The current
+        types of variables this can return are: """
         try:
+            # num - Number
             data = float(data)
             data = ('num', data)
         except ValueError:
+
+            if re.match(r'\[.*,.*\]', data):
+                # Array
+                elements = self.parse_args(data[1:-1], num)
+                data = ('arr', elements)
+                return data
+
             if '"' not in data:
-                data = ('var', data)
+                data = data.strip()
+                if re.match(r'.*\[[0-9]+\]', data):
+                    # elm - Element access
+                    var = data.split('[')[0]
+                    element = int(data.strip(']').strip().split('[')[1])
+                    data = ('elm', {'var': var, 'element': element})
+
+                else:
+                    # Check for invalid chars in var name
+                    data = data.strip()
+                    if re.match('.*\W.*', data):
+                        try:
+                            data = self.parse_math(data, num)
+                            return 'maf', data
+                        except SyntaxError:
+                            raise SyntaxError(f'Invalid variable name @ line {num}')
+
+                    # var - Variable
+                    data = ('var', data)
+
             else:
-                data = ('str', data[1:-1])
+                # Variable pre-check
+
+                if re.match(r'[^#]', self.hash_strings(data.strip(), num)):
+                    raise SyntaxError(f'Invalid variable format @ line {num}')
+
+                # str - String
+                data = ('str', data.strip()[1:-1])
 
         return data
 
     # ------------------------------------------
     # Statement types
     # ------------------------------------------
+
+    def parse_if(self, line, kw='if'):
+        """ Parses an if statement header. """
+        index = line[0]
+        indent = line[1]
+        text = line[2]
+
+        text = text.replace(kw, '')[:-1].strip()
+        return (
+            index, indent,
+            {'type': kw, 'condition': self.parse_math(text, index)}
+        )
+
+    def parse_elif(self, line):
+        """ Parses an elif statement. """
+        return self.parse_if(line, kw='elif')
+
+    def parse_else(self, line):
+        """ Just returns a structured else. """
+        return line[0], line[1], {'type': 'else'}
 
     def parse_call(self, line: tuple):
         """ Parses a function call. """
@@ -299,10 +444,7 @@ class _Parser:
 
         var, data = (s.strip() for s in text.split('='))
 
-        if re.match(r'\[.*,.*\]', data):
-            data = self.parse_array(data, index)
-        else:
-            data = self.variable(data)
+        data = self.variable(data, index)
 
         return (
             index, indent,
@@ -330,7 +472,7 @@ class _Parser:
                 new.append(data)
 
         for index, st in enumerate(new):
-            if st['type'] == 'function':
+            if st['type'] in ['function', 'if', 'else', 'elif']:
                 sts = []
                 for i in st['code']:
                     sts.append(self.shift(i))
