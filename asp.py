@@ -1,3 +1,6 @@
+#
+#  [!]  DEPRECATED
+#
 # python >= 3.9
 """ This is the code parser for Astro Script Executable
 (.asx) files. It is supposed to be used as a plug-in script,
