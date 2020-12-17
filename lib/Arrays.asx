@@ -1,0 +1,29 @@
+/-- 
+    This is the Arrays library containing useful tools
+    for operations on arrays and with arrays. This will
+    probably be included in the standard library as this
+    contains the len() function, which returns the length
+    of the array.
+
+    Note: This is currently only in the testing stage, as
+    interpreters for this language still do not exist. 
+
+    @author   bellrise
+    @version  0.1
+
+--/
+
+/-- Temporary variable, used for storing data.
+All temporary data is assigned to this __temp variable,
+to keep memory usage as low as possible. --/
+__temp = 0
+
+
+/-- Returns the length of an array --/
+#len(buf):
+    e = 0
+    while True:
+        try:
+            __temp = buf[e]
+        else:
+            return e
