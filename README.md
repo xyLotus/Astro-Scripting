@@ -7,16 +7,13 @@ Astro Scripting (short: ASX), is a simple, interpreted scripting language implem
 
 
 ## Syntax
-#### Variables
+### Variables
 Because Astro is an dynamic typed language, so you don't have to specify the types.
 ```
--- Normal variables
 var = 12
-
--- Arrays
-array = 1, 2, 3
+x = 12 * var
 ```
-#### Comments
+### Comments
 ```
 -- Single line comments
 /-- Multi
@@ -24,7 +21,7 @@ array = 1, 2, 3
     comments --/
 ```
 
-#### Functions 
+### Functions 
 ```
 #function_name(param):
       say "something"
@@ -33,6 +30,24 @@ array = 1, 2, 3
 
 -- Function calling
 function_name(12)
+```
+
+### Arrays
+This will print `2`, as elements in the array are counted from 0.
+```
+array = [1, 2, "a string"]
+say array[1]
+
+```
+
+### Conditions
+```
+if 1 == 2:
+    say "Something is wrong here!"
+elif 1 >= 3:
+    say "This is even worse"
+else:
+    say "Math works!"
 ```
 
 
@@ -45,5 +60,5 @@ function_name(12)
 * String `"a string"`
 * Number `7.1`
 * Boolean `True` / `False`
-* Array `1, 2, "3"`
+* Array `[1, 2, "3"]`
 Note: arrays can be multi-type
