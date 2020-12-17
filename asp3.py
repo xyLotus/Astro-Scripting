@@ -7,7 +7,7 @@ a module, just use the parse function.
 import re
 
 __author__  = 'bellrise'
-__version__ = '3.1.2'
+__version__ = '3.1.4'
 
 # This is the format version of the code object generated
 # by the parser, each new format is most probably incompatible
@@ -112,9 +112,6 @@ class _Parser:
             indent = line[1]
             text = line[2]
 
-            if not text:
-                continue
-
             # Functions
             if re.match(r'^#[_A-z][_A-z0-9]*\(.*\):', text) and not in_func:
                 in_func = True
@@ -123,13 +120,13 @@ class _Parser:
                 continue
 
             # Inside of function
-            if in_func and (indent > func_indent):
+            if in_func and (indent > func_indent) and text:
                 self.omit.append(line[0])
                 func.append(line)
                 continue
 
             # Outside of function
-            if in_func and (indent <= func_indent) and text:
+            if in_func and (indent <= func_indent):
                 in_func = False
                 func_indent = 0
                 collected.append(func)
@@ -157,6 +154,11 @@ class _Parser:
             # Else statement
             if re.match(r'^else:', text):
                 lines[pos] = self.parse_else(line)
+                continue
+
+            # Try statement
+            if re.match(r'^try:', text):
+                lines[pos] = self.parse_try(line)
                 continue
 
             # Function header
@@ -195,7 +197,7 @@ class _Parser:
             for index, line in enumerate(lines):
                 code = line[2]
                 if code:
-                    if code['type'] in ['if', 'else', 'elif']:
+                    if code['type'] in ['if', 'else', 'elif', 'try']:
                         found = True
                         if_indent = line[1]
                         cursor = index + 1
@@ -370,6 +372,10 @@ class _Parser:
         """ Just returns a structured else. """
         return line[0], line[1], {'type': 'else'}
 
+    def parse_try(self, line):
+        """ Just returns a structures else. """
+        return line[0], line[1], {'type': 'try'}
+
     def parse_call(self, line: tuple):
         """ Parses a function call. """
         index = line[0]
@@ -472,7 +478,7 @@ class _Parser:
                 new.append(data)
 
         for index, st in enumerate(new):
-            if st['type'] in ['function', 'if', 'else', 'elif']:
+            if st['type'] in ['function', 'if', 'else', 'elif', 'try']:
                 sts = []
                 for i in st['code']:
                     sts.append(self.shift(i))
