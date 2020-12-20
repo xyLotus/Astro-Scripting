@@ -26,5 +26,5 @@ ___
 ### b
 
 `b` is a C library containing a lot of useful tools and object models for easier, object-oriented style programming with a lot
-of automatic memory allocation and background functionality. This project has been based on this library to make it a lot eaiser
+of automatic memory allocation and background functionality. This project has been based on this library to make it a lot easier
 to program.
