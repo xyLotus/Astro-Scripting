@@ -1,7 +1,7 @@
 # Starbuilder
 
-![](https://img.shields.io/badge/Language-C-pink)
-![](https://img.shields.io/badge/Version-0.0.1-%2333aa33)
+![Languages](https://img.shields.io/badge/Languages-C,%20Python-blueviolet)
+![Version](https://img.shields.io/badge/Version-0.0.1-%2333aa33)
 
 Starbuilder is a tool for creating `*.star` files which package all your Astro scripts and dependencies. This is useful for deploying
 packaged scripts which can be run with one command, and also for easy and simple version control. This software is based on the `b` library.
