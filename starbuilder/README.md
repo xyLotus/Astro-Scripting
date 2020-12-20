@@ -6,7 +6,7 @@
 Starbuilder is a tool for creating `*.star` files which package all your Astro scripts and dependencies. This is useful for deploying
 packaged scripts which can be run with one command, and also for easy and simple version control. This software is based on the `b` library.
 ___
-### How to use
+### Compiling
 
 Before actually using the program, it is required to compile it on your machine. Real releases will be placed after reaching a certain
 point in development. This may sound scary, but this has also been automated for you. The only thing you need to run is this in a command
