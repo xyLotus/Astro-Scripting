@@ -15,12 +15,12 @@ prompt of your choice. After that, you will get an executable which can be ran d
 #### Windows
 ```bat
 .\compile
-.\Starbuilder.exe
+.\StarBuilder.exe
 ```
 #### Linux
 ```bash
-./compile-linux
-./Starbuilder
+bash ./compile.sh
+./StarBuilder
 ```
 ___
 ### b
