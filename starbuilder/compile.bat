@@ -15,7 +15,7 @@ set /A argc=0
 ))
 
 :: Compiling with gcc
-if %compile%==true gcc .\StarBuilder.c
+if %compile%==true gcc .\StarBuilder.c -o Starbuilder
 
 :: Run after compiling
 if %run%==true .\a
