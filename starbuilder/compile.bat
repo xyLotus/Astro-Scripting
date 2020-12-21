@@ -25,16 +25,18 @@ set /A argc=0
 if %help%==true call :help_page
 
 :: Compiling with gcc
-if %compile%==true gcc .\Star.c -o Starbuilder
+if %compile%==true gcc .\Starbuilder.c -o Starbuilder
 
 :: Run after compiling
 if %run%==true .\Starbuilder
 
-EXIT 0
+goto :END
 
 :help_page
     echo Usage: compile.bat [-r] [-n] [-h]
     echo -h, --help        - Show this
     echo -n, --no-compile  - Do not compile
     echo -r, --run         - Run after compilation
-EXIT 0
+    goto :END
+
+:END
