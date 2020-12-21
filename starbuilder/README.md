@@ -16,16 +16,16 @@ prompt of your choice. After that, you will get an executable which can be ran d
 Simply double clicking the compile.bat script will do the job, but you can also use the command line option and list the options
 using `.\compile -h`
 ```bat
-.\compile
-.\StarBuilder.exe
+> .\compile
+> .\StarBuilder.exe
 ```
 #### Linux
 This version is much more fun, as it offers a configuration file called `starbuilder.config` where you can change some default settings
 or even automatically move the generated binary to /bin/ for later use. To make your life easier, you can stick a `chmod +x ./compile.sh`
 line before doing anything, so you don't have to use `bash` every time.
 ```bash
-bash ./compile.sh
-./StarBuilder
+$ bash ./compile.sh
+$ ./StarBuilder
 ```
 ___
 ### b
