@@ -11,8 +11,8 @@
  */
 
 // Header guards
-#ifndef B_INCLUDED_BASE
-#define B_INCLUDED_BASE
+#ifndef B_BASE_H
+#define B_BASE_H
 
 typedef unsigned int uint;
 
@@ -23,11 +23,21 @@ typedef unsigned int uint;
     #define debug(FUNCTION) ;
 #endif
 
+// OS types
+#define OS_WIN   1
+#define OS_UNIX  2
+
+// OS Settings
+#ifdef _WIN32
+    #define OS   OS_WIN
+#else
+    #define OS   OS_UNIX
+#endif
+
 // Base scripts that every file will include
 #include "Error.h"
 #include "Bool.h"
 #include "String.h"
 
 
-
-#endif
+#endif // B_BASE_H

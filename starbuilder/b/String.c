@@ -141,7 +141,6 @@ void stringQPrint(String* str)
 }
 
 
-
 /** Replaces all char a's with char b's in the whole string. 
  * This is much more efficient than the stringReplace method
  * which replaces substrings, so please use this when possible.
@@ -437,12 +436,17 @@ void stringArrayPut(StringArray* arr, String str, int __i)
 /** Prints the contents of the list to stdout */
 void stringArrayPrint(StringArray* arr) 
 {
+    if (stringArrayLength(arr) == 0) {
+        printf("[]\n");
+        return;
+    }
+
     printf("[");
     for (int i = 0; i < stringArrayLength(arr) - 1; i++) {
         printf("\""); stringPrint(&arr->value[i]); printf("\", ");
     }
     printf("\""); stringPrint(&arr->value[arr->len - 1]); printf("\"");
-    printf("]");
+    printf("]\n");
 }
 
 /** Returns the string at the given index, raises an
@@ -456,3 +460,128 @@ String stringArrayGet(StringArray* arr, int __i)
 
     return arr->value[__i];
 }
+
+/** Finds the index of the given string, returns -1 if no
+ * such string is found.
+ */
+int stringArrayFind(StringArray* arr, String match) 
+{
+    for (int i = 0; i < stringArrayLength(arr); i++) {
+        String comparer = stringArrayGet(arr, i);
+        if (stringCompare(&comparer, &match)) {
+            return i;
+        }
+    }    
+    return -1;
+}
+
+
+// -----------------------------------------------------------------------
+// StringMap
+// -----------------------------------------------------------------------
+
+/** This is the constructor for the string map, it sets the
+ * StringArrays to null pointers and the length to 0. Be
+ * sure to call this when creating a new StringMap, or else
+ * serious problems can occur.
+ */
+StringMap newStringMap() 
+{
+    StringMap map = {
+        newStringArray(), 
+        newStringArray(), 
+        0
+    };
+    return map;
+}
+
+/** Prints the StringMap in a nice, formatted way with brackets
+ * and all that fancy stuff.
+ */
+void stringMapPrint(StringMap* map)
+{
+    if (stringMapLength(map) == 0) {
+        printf("{}\n");
+        return;
+    }
+
+    printf("{");
+    for (int i = 0; i < stringMapLength(map); i++) {
+        String key = stringMapGetKey(map, i);
+        String value = stringMapGetValue(map, i);
+        printf("\""); stringPrint(&key); printf("\": ");
+        printf("\""); stringPrint(&value); printf("\"");
+
+        if (i < stringMapLength(map) - 1) {
+            printf(", ");
+        }
+    }
+    printf("}\n");
+}
+
+/** Adds a single key-value pair to the map, both the key and
+ * the value have to be new strings, not string pointers. Apart
+ * from just adding the strings to the string arrays, it checks 
+ * the lengths of the arrays just in case.
+ */
+void stringMapAdd(StringMap* map, String key, String value)
+{
+    stringArrayAdd(&map->keys, key);
+    stringArrayAdd(&map->values, value);
+    map->len++;
+
+    // Length check
+    if (stringArrayLength(&map->keys) != stringMapLength(map)) {
+        raise(MemoryError, "Key mapping failed.");
+    }
+}
+
+/** This returns the length of the passed StringMap. This is the
+ * preffered way of getting the length, because the contents of
+ * the StringMap struct should be read only for the user.
+ */
+int stringMapLength(StringMap* map)
+{
+    return map->len;
+}
+
+/** Returns the key at the specified index. This throws an
+ * Overflow error if the index is out of bounds.
+ */
+String stringMapGetKey(StringMap* map, int __i)
+{
+    if (__i >= stringMapLength(map)) {
+        raise(OverflowError, "Index is out of bounds");
+    }
+
+    return stringArrayGet(&map->keys, __i);
+}
+
+/** Returns the value at the specified index. This throws an
+ * Overflow error if the index is out of bounds.
+ */
+String stringMapGetValue(StringMap* map, int __i)
+{
+    if (__i >= stringMapLength(map)) {
+        raise(OverflowError, "Index is out of bounds");
+    }
+
+    return stringArrayGet(&map->values, __i);
+}
+
+/** Finds the given key in the map and returns the index of
+ * it. If no matching key is found, returns -1.
+ */
+int stringMapFindKey(StringMap* map, String match)
+{
+    return stringArrayFind(&map->keys, match);
+}
+
+/** Finds the given value in the map and returns the index of
+ * it. If no matching value is found, returns -1.
+ */
+int stringMapFindValue(StringMap* map, String match)
+{
+    return stringArrayFind(&map->values, match);
+}
+
