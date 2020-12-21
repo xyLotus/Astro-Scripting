@@ -56,18 +56,22 @@ function load_config {
 
     local ln=0
     while read line; do
-        
-        if [ ${line:0:1} != "#" ]; then 
-            # Non comment line, parse and set        
-            # Splitting the line
-            IFS='='
-            read -ra ADDR <<< "$line"
-            local setting=${ADDR[0]}
-            local data=${ADDR[1]}
+
+        if [ ${#line} -ne 0 ]; then
             
-            if [ $setting == "MAIN" ]; then cfg_main=$data; fi   
-            if [ $setting == "NAME" ]; then cfg_name=$data; fi   
-            if [ $setting == "BIN" ]; then cfg_bin=$data; fi   
+            if [ ${line:0:1} != "#" ]; then 
+                # Non comment line, parse and set        
+                # Splitting the line
+                IFS='='
+                read -ra ADDR <<< "$line"
+                local setting=${ADDR[0]}
+                local data=${ADDR[1]}
+            
+                if [ $setting == "MAIN" ]; then cfg_main=$data; fi   
+                if [ $setting == "NAME" ]; then cfg_name=$data; fi   
+                if [ $setting == "BIN" ]; then cfg_bin=$data; fi   
+ 
+            fi
         fi
 
         # Counter step
