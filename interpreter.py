@@ -22,8 +22,8 @@
 * 0.3
     -- Memory Handling Patch -- 
     -- Statement Implementation -- 
-    - Say Statement Added   | Output
-    - Wait Statement Added  | Pausing Program
+    - Say Statement Added                               | Output
+    - Wait Statement Added                              | Pausing Program
     - Say Statement Parameter Mem Grabbing Implemented  | In/Out-Function (See 0.3 Pre-Patch)
     - Wait Statement Parameter Mem Grabbing Implemented | In/Out-Function (See 0.3 Pre-Patch)
     - Say Statement Variable Mem Grabbing Implemented   | In/Out-Function (See 0.3 Pre-Patch)
