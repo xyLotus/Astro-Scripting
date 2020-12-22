@@ -2,7 +2,7 @@
 
 ''' Change Log:
 
-*0.1
+* 0.1
     -- Memory Mangement Patch -- 
     - AMM | Variable Storage Implemented
     - AMM | Function Content Storage Implemented
@@ -16,19 +16,20 @@ __version__ = '0.1'
 def error_out(error_message: str): 
     print(f' * [ERROR] | {error_message}')
 
-try: 
-    import asp 
-    import llx
-except ImportError as ImportErr: 
+try:
+    import asp              # Astro Parser (short: ASP)
+    import llx              # tool kit
+    from time import sleep  # pausing the program
+except ImportError as ImportErr:
     error_out(f'Critical Import Error -> {ImportError}')
     exit()
 
 
 # AMM - Astro Memory Management
-variable_storage = {}
-function_storage = {}
-function_parameter_storage = {}
-
+variable_storage = {}               # Variable Names & Values
+function_storage = {}               # Function Content
+function_parameter_val_storage = {}  # Parameter Names & Values
+function_parameter_storage = {}     # Parameter Names | Sub-Storage
 
 def _get_parse(src_file: str):
     try: 
@@ -40,17 +41,17 @@ def _get_parse(src_file: str):
         exit()
 
 
-class Dev: 
+class Dev:
     def specify_parse(self, parse_content, specification: int, optional_specification: str):
         try: 
             if optional_specification == '':
                 parse_content[specification]
             else: 
                 parse_content[specification][optional_specification]
-        except Exception as Ex: 
+        except Exception as Ex:
             error_out(Ex)
 
-    def out_mem(self, mem_type: dict): 
+    def out_mem(self, mem_type: dict):
         print(f'Memory: {mem_type}')
 
 
@@ -67,50 +68,88 @@ class Memory:
     def store_function_parameter(self, function: str, parameters: list):
         function_parameter_storage[function] = parameters
 
+    def assign_parameter_mem(self, values, params, name): 
+        args = {}
+        for value, param in zip(values, params):
+            args[param] = value             
+
+        # func = {name: args}
+        function_parameter_val_storage[name] = args
+
 
 class Interpreter: 
-    def __init__(self, memory, dev, src_path): 
+    def __init__(self, memory, dev, src_path):
         self.dev = dev
         self.memory = memory
         self.content = _get_parse(src_path)
         
-    def interpret(self): 
-        for statement in self.content: 
-            # print(f'Current Statement: {statement}') ###TODO - RE-ENABLE
-            
+    def _exec_function(self, func_name: str):   # executes function | used @ interpret method
+        print('Function running...') 
+        self.interpret(source=function_storage[func_name], in_function=True, function_name=func_name)
+
+    def _exec_say(self, out):   # say statement execution function
+        print(out)
+
+    def _exec_wait(self, time): # wait statement execution function
+        sleep(time)
+
+    def interpret(self, source, in_function: bool, function_name: str = ''): 
+        for statement in source: 
+            # print(f'Current Statement: {statement}') ### TODO -> RE-ENABLE
+
             ### AMM | Variables ### 
             if statement['type'] == 'assignment': 
                 variable_name = statement['var']
                 variable_value = statement['data'][1]
                 self.memory.store_variable(variable=variable_name, value=variable_value)
-                print('Variable_Storage: ', end='')
-                self.dev.out_mem(variable_storage)
             ### AMM | Functions - Content - Parameter Names ### 
             elif statement['type'] == 'function': 
                 ## Content ##
                 function_name = statement['name']
                 function_content = statement['code']
                 self.memory.store_function_content(function=function_name, content=function_content)
-                print('Function_Storage: ', end='')
-                self.dev.out_mem(function_storage)
 
                 ## Parameter Names ##
                 parameters = statement['parameters']
                 self.memory.store_function_parameter(function=function_name, parameters=parameters)
-                print('Function_Parameter_Storage: ', end='')
-                self.dev.out_mem(function_parameter_storage)
             ### AMM | Function Parameter Values ###
-            
-
+            elif statement['type'] == 'call': 
+                function_name = statement['name']
+                param_vals = statement['params'] 
+                self.memory.assign_parameter_mem(
+                                                 values=param_vals,
+                                                 params=function_parameter_storage[function_name],
+                                                 name=function_name
+                                                )
+                self._exec_function(func_name=function_name)
+            ### Statement Execution ###
+            elif statement['type'] == 'statement': 
+                if statement['name'] == 'say':
+                    if in_function:
+                        parameter_name = statement['params'][0][1]
+                        try: 
+                            output_msg = function_parameter_val_storage[function_name][parameter_name][1]
+                        except KeyError: 
+                            try: 
+                                output_msg = variable_storage[parameter_name]
+                            except KeyError: 
+                                output_msg = statement['params'][0][1]
+                        self._exec_say(out=output_msg)
+                    else: 
+                        output_msg = statement['params'][0][1]
+                        self._exec_say(out=output_msg)
+                if statement['name'] == 'wait': 
+                    sec = statement['params'][0][1]
+                    self._exec_wait(time=sec)
+                    
 
 dev = Dev()
 mem = Memory()
-
 Interpreter = Interpreter(
                             dev=dev,
-                            memory = mem,
-                            src_path=r'sample.asx'
-                         )
+                            memory=mem,
+                            src_path=r'C:\Users\Martin\Desktop\EVERYTHING\Python\Astro - Scripting\src\sample.asx'
+                        )
 
 # CLS Instance Method Initialization
-Interpreter.interpret()
+Interpreter.interpret(source=Interpreter.content, in_function=False)
