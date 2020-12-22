@@ -58,7 +58,7 @@ library.
 import re
 
 __author__  = 'bellrise'
-__version__ = '3.3.4'
+__version__ = '3.4.0'
 
 # This is the format version of the code object generated
 # by the parser, each new format is most probably incompatible
@@ -212,7 +212,7 @@ class _Parser:
                 r'^try:': self.parse_try,
 
                 # Function block header
-                r'#[_A-z][_A-z0-9]*\(.*\):': self.parse_header,
+                r'^#[_A-z][_A-z0-9]*\(.*\):': self.parse_header,
 
                 # Assignment statement
                 r'^[_A-z][_A-z0-9]* *= *.*': self.parse_assignment,
@@ -221,7 +221,10 @@ class _Parser:
                 r'^[_A-z][_A-z0-9]* .*': self.parse_statement,
 
                 # Function call statement
-                r'^[_A-z][_A-z0-9]*\(.*\)': self.parse_call,
+                r'^[_A-z][_A-z0-9]*\(.*\)$': self.parse_call,
+
+                # Mixin
+                r'^@mixin .*': self.parse_mixin,
 
             }
 
@@ -522,12 +525,23 @@ class _Parser:
         indent = line[1]
         text = line[2]
 
-        name = text.split('(')[0]
-        params = self.parse_args(text.split('(')[1][:-1], index)
+        name = text.split('(', maxsplit=1)[0]
+        params = self.parse_args(text.split('(', maxsplit=1)[1][:-1], index)
 
         return [
             index, indent,
             {'type': 'call', 'name': name, 'params': params}
+        ]
+
+    def parse_mixin(self, line: tuple):
+        """ Parses a mixin statement """
+        index = line[0]
+        indent = line[1]
+        text = line[2]
+
+        return [
+            index, indent,
+            {'type': 'mixin', 'value': text.split(' ', maxsplit=1)[1]}
         ]
 
     def parse_header(self, line: tuple):
