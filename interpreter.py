@@ -29,28 +29,33 @@
     - Say Statement Variable Mem Grabbing Implemented   | In/Out-Function (See 0.3 Pre-Patch)
     - Wait Statement Variable Mem Grabbing Implemented  | In/Out-Function (See 0.3 Pre-Patch)
 
+* 0.4 
+    -- CMD / Powershell ArgHandling --
+    - Argument Parsing Implemented 
+
 '''
 
 __author__ = 'Lotus'
-__version__ = '0.3'
+__version__ = '0.4'
 
 def error_out(error_message: str): 
     print(f' * [ERROR] | {error_message}')
 
 try:
-    import asp              # Astro Parser (short: ASP)
-    import llx              # tool kit
-    from time import sleep  # pausing the program
+    import asp.asp3 as asp  # Parser import
+    from time import sleep          # Pausing the program
+    import sys                      # PATH
 except ImportError as ImportErr:
-    error_out(f'Critical Import Error -> {ImportError}')
+    error_out(f'Critical Import Error -> {ImportErr}')
     exit()
 
 
 # AMM - Astro Memory Management
-variable_storage = {}               # Variable Names & Values
-function_storage = {}               # Function Content
-function_parameter_val_storage = {}  # Parameter Names & Values
-function_parameter_storage = {}     # Parameter Names | Sub-Storage
+variable_storage = {}                   # Variable Names & Values
+function_variable_storage = {}
+function_storage = {}                   # Function Content
+function_parameter_val_storage = {}     # Parameter Names & Values
+function_parameter_storage = {}         # Parameter Names | Sub-Storage
 
 def _get_parse(src_file: str):
     try: 
@@ -89,12 +94,17 @@ class Memory:
     def store_function_parameter(self, function: str, parameters: list):
         function_parameter_storage[function] = parameters
 
+    def store_func_variable(self, function_name: str, variable: str, value: str): 
+        try:
+            function_variable_storage[function_name].update({variable: value})
+        except KeyError:
+            function_variable_storage[function_name] = {variable: value}
+
     def assign_parameter_mem(self, values, params, name): 
         args = {}
         for value, param in zip(values, params):
             args[param] = value             
 
-        # func = {name: args}
         function_parameter_val_storage[name] = args
 
 
@@ -122,14 +132,21 @@ class Interpreter:
         sleep(time)
 
     def interpret(self, source, in_function: bool, function_name: str = ''): 
-        for statement in source: 
-            # print(f'Current Statement: {statement}') ### TODO -> RE-ENABLE
-
+        for statement in source:
             ### AMM | Variables ### 
             if statement['type'] == 'assignment': 
-                variable_name = statement['var']
-                variable_value = statement['data'][1]
-                self.memory.store_variable(variable=variable_name, value=variable_value)
+                if in_function:
+                    variable_name = statement["var"]
+                    variable_value = statement['data'][1]
+                    self.memory.store_func_variable(
+                                                    function_name=function_name, 
+                                                    variable=variable_name, 
+                                                    value=variable_value
+                                                    )
+                else: 
+                    variable_name = statement['var']
+                    variable_value = statement['data'][1]
+                    self.memory.store_variable(variable=variable_name, value=variable_value)
             ### AMM | Functions - Content - Parameter Names ### 
             elif statement['type'] == 'function': 
                 ## Content ##
@@ -153,25 +170,34 @@ class Interpreter:
             ### Statement Execution ###
             elif statement['type'] == 'statement': 
                 if statement['name'] == 'say':
-                    if in_function:
-                        parameter_name = statement['params'][0][1]                                  # Access Specifier
-                        try: 
-                            output_msg = function_parameter_val_storage[function_name][parameter_name][1] # Trying to Get Corresponding Param Value
-                        except KeyError: 
+                    parameter_type = statement['params'][0][0]
+                    parameter_name = statement['params'][0][1]                                      
+                    if parameter_type == 'var': 
+                        if in_function:                                      
                             try: 
-                                output_msg = variable_storage[parameter_name]                       # Trying to Get Corresponding Var Value
+                                output_msg = function_parameter_val_storage[function_name][parameter_name][1] 
                             except KeyError: 
-                                output_msg = statement['params'][0][1]                              # Trying to Get raw output
-                        self._exec_say(out=output_msg)
-                    else: 
-                        output_msg = statement['params'][0][1]
-                        self._exec_say(out=output_msg)
+                                try: 
+                                    output_msg = function_variable_storage[function_name][parameter_name]
+                                except KeyError:
+                                    try: 
+                                        output_msg = variable_storage[parameter_name]
+                                    except KeyError:
+                                        output_msg = statement['params'][0][1]
+                        else: 
+                            try: 
+                                output_msg = variable_storage[parameter_name]
+                            except KeyError: 
+                                output_msg = parameter_name
+                else: 
+                    output_msg = parameter_name
+                self._exec_say(out=output_msg)
                 if statement['name'] == 'wait': 
                     if in_function: 
                         parameter_name = statement['params'][0][1]                                  # Access Specifier
                         try: 
                             sec = function_parameter_val_storage[function_name][parameter_name][1]  # Trying to Get Corresponding Param Value
-                        except KeyError: 
+                        except KeyError:
                             try: 
                                 sec = variable_storage[parameter_name]                              # Trying to Get Corresponding Var Value
                             except KeyError: 
@@ -184,8 +210,9 @@ mem = Memory()
 Interpreter = Interpreter(
                             dev=dev,
                             memory=mem,
-                            src_path=r'_PATH_'
+                            src_path=r'C:\Users\Martin\Desktop\EVERYTHING\Python\Astro - Scripting\src\sample.asx'
                         )
 
 # CLS Instance Method Initialization
 Interpreter.interpret(source=Interpreter.content, in_function=False)
+print(function_variable_storage)
