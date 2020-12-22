@@ -215,4 +215,3 @@ Interpreter = Interpreter(
 
 # CLS Instance Method Initialization
 Interpreter.interpret(source=Interpreter.content, in_function=False)
-print(function_variable_storage)
