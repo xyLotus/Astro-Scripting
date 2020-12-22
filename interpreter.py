@@ -84,7 +84,6 @@ class Interpreter:
         self.content = _get_parse(src_path)
         
     def _exec_function(self, func_name: str):   # executes function | used @ interpret method
-        print('Function running...') 
         self.interpret(source=function_storage[func_name], in_function=True, function_name=func_name)
 
     def _exec_say(self, out):   # say statement execution function
@@ -126,20 +125,28 @@ class Interpreter:
             elif statement['type'] == 'statement': 
                 if statement['name'] == 'say':
                     if in_function:
-                        parameter_name = statement['params'][0][1]
+                        parameter_name = statement['params'][0][1]                                  # Access Specifier
                         try: 
-                            output_msg = function_parameter_val_storage[function_name][parameter_name][1]
+                            output_msg = function_parameter_val_storage[function_name][parameter_name][1] # Trying to Get Corresponding Param Value
                         except KeyError: 
                             try: 
-                                output_msg = variable_storage[parameter_name]
+                                output_msg = variable_storage[parameter_name]                       # Trying to Get Corresponding Var Value
                             except KeyError: 
-                                output_msg = statement['params'][0][1]
+                                output_msg = statement['params'][0][1]                              # Trying to Get raw output
                         self._exec_say(out=output_msg)
                     else: 
                         output_msg = statement['params'][0][1]
                         self._exec_say(out=output_msg)
                 if statement['name'] == 'wait': 
-                    sec = statement['params'][0][1]
+                    if in_function: 
+                        parameter_name = statement['params'][0][1]                                  # Access Specifier
+                        try: 
+                            sec = function_parameter_val_storage[function_name][parameter_name][1]  # Trying to Get Corresponding Param Value
+                        except KeyError: 
+                            try: 
+                                sec = variable_storage[parameter_name]                              # Trying to Get Corresponding Var Value
+                            except KeyError: 
+                                sec = statement['params'][0][1]                                     # Trying to Get raw output
                     self._exec_wait(time=sec)
                     
 
