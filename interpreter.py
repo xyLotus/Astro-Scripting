@@ -184,7 +184,7 @@ mem = Memory()
 Interpreter = Interpreter(
                             dev=dev,
                             memory=mem,
-                            src_path=r'C:\Users\Martin\Desktop\EVERYTHING\Python\Astro - Scripting\src\sample.asx'
+                            src_path=r'_PATH_'
                         )
 
 # CLS Instance Method Initialization
