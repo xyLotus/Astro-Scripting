@@ -1,0 +1,12 @@
+/--
+  This is the "library comment", telling users what this library does.
+
+  @author   yourName
+  @version  0.1
+--/
+
+/-- Function comment, tells you what this function does. --/
+#time():
+    current_time = ""
+    @mixin Time#time
+    return current_time
