@@ -16,8 +16,8 @@
 * 0.3 Pre-Patch 
     -- Interpreter CLS Changes --
     - 2 New Interpret Method Parameters
-    - 1st Parameter: in_function        | for interpreting functions
-    - 2nd Parameter: function_name      | for interpreting functions <- and getting MEM [AMM]
+    - 1st Parameter: in_function                        | for interpreting functions
+    - 2nd Parameter: function_name                      | for interpreting functions <- and getting MEM [AMM]
 
 * 0.3
     -- Memory Handling Patch -- 
@@ -96,6 +96,14 @@ class Memory:
 
         # func = {name: args}
         function_parameter_val_storage[name] = args
+
+
+class Math: 
+    def __init__(self): 
+        pass
+
+    def prioritise(self): 
+        pass
 
 
 class Interpreter: 
