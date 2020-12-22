@@ -8,10 +8,31 @@
     - AMM | Function Content Storage Implemented
     - AMM | Function Parameter Name Storage Implemented
 
+* 0.2
+    -- Memory Management Patch -- 
+    - AMM | Parameter Name AND Value storage FINALLY FUCKING finished C: (thanks to bellrise)
+
+
+* 0.3 Pre-Patch 
+    -- Interpreter CLS Changes --
+    - 2 New Interpret Method Parameters
+    - 1st Parameter: in_function        | for interpreting functions
+    - 2nd Parameter: function_name      | for interpreting functions <- and getting MEM [AMM]
+
+* 0.3
+    -- Memory Handling Patch -- 
+    -- Statement Implementation -- 
+    - Say Statement Added   | Output
+    - Wait Statement Added  | Pausing Program
+    - Say Statement Parameter Mem Grabbing Implemented  | In/Out-Function (See 0.3 Pre-Patch)
+    - Wait Statement Parameter Mem Grabbing Implemented | In/Out-Function (See 0.3 Pre-Patch)
+    - Say Statement Variable Mem Grabbing Implemented   | In/Out-Function (See 0.3 Pre-Patch)
+    - Wait Statement Variable Mem Grabbing Implemented  | In/Out-Function (See 0.3 Pre-Patch)
+
 '''
 
 __author__ = 'Lotus'
-__version__ = '0.1'
+__version__ = '0.3'
 
 def error_out(error_message: str): 
     print(f' * [ERROR] | {error_message}')
