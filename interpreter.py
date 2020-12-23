@@ -16,8 +16,8 @@
 * 0.3 Pre-Patch 
     -- Interpreter CLS Changes --
     - 2 New Interpret Method Parameters
-    - 1st Parameter: in_function                        | for interpreting functions
-    - 2nd Parameter: function_name                      | for interpreting functions <- and getting MEM [AMM]
+    - 1st Parameter: in_function                        | For Interpreting Functions
+    - 2nd Parameter: function_name                      | For Interpreting Functions <- Getting Mem [AMM]
 
 * 0.3
     -- Memory Handling Patch -- 
@@ -29,9 +29,13 @@
     - Say Statement Variable Mem Grabbing Implemented   | In/Out-Function (See 0.3 Pre-Patch)
     - Wait Statement Variable Mem Grabbing Implemented  | In/Out-Function (See 0.3 Pre-Patch)
 
-* 0.4 
-    -- CMD / Powershell ArgHandling --
-    - Argument Parsing Implemented 
+* 0.4
+    -- Interpreter CLS Changes --
+    -- Reformatting -- 
+    - Reformatted Interpreter CLS
+    - Code In "Interpret" Method Now Split Into Sub-Methods
+    - Interpret Method -> Main Method
+    - A Lot Of New Comments
 
 '''
 
@@ -51,15 +55,15 @@ except ImportError as ImportErr:
 
 
 # AMM - Astro Memory Management
-variable_storage = {}                   # Variable Names & Values
-function_variable_storage = {}
-function_storage = {}                   # Function Content
-function_parameter_val_storage = {}     # Parameter Names & Values
-function_parameter_storage = {}         # Parameter Names | Sub-Storage
+variable_storage = {}                   # Global Scope  |   Variable Names & Values         | Main Storage
+function_variable_storage = {}          # Local Scope   |   Function Var Storage            | Main Storage
+function_parameter_val_storage = {}     # Global-Local  |   Parameter Names & Values        | Main Storage
+function_storage = {}                   # Global-Local  |   Function Content                | Sub-Storage
+function_parameter_storage = {}         # Global-Local  |   Parameter Names                 | Sub-Storage
 
-def _get_parse(src_file: str):
+def _get_parse(src_file: str):  # Getting Parsed Code (ASP Module)
     try: 
-        with open(src_file, 'r') as file: 
+        with open(src_file, 'r') as file:
             code = asp.parse(file)
             return code
     except FileNotFoundError as FNF: 
@@ -85,22 +89,22 @@ class Memory:
     def __init__(self): 
         pass
 
-    def store_variable(self, variable: str, value): 
+    def store_variable(self, variable: str, value): # AMM | Storing Variables in Var Storage
         variable_storage[variable] = value
 
-    def store_function_content(self, function: str, content):
+    def store_function_content(self, function: str, content): # AMM | Storing Function Content in Func Storage
         function_storage[function] = content
 
-    def store_function_parameter(self, function: str, parameters: list):
+    def store_function_parameter(self, function: str, parameters: list): # AMM | Storing Func Param Names in Func Param Storage
         function_parameter_storage[function] = parameters
 
-    def store_func_variable(self, function_name: str, variable: str, value: str): 
+    def store_func_variable(self, function_name: str, variable: str, value: str):   # AMM | Storing Func Vars in Func Var Storage  
         try:
             function_variable_storage[function_name].update({variable: value})
         except KeyError:
             function_variable_storage[function_name] = {variable: value}
 
-    def assign_parameter_mem(self, values, params, name): 
+    def assign_parameter_mem(self, values, params, name):   # AMM | Storing Func Param Vals in FuncParamVal Storage
         args = {}
         for value, param in zip(values, params):
             args[param] = value             
@@ -131,87 +135,99 @@ class Interpreter:
     def _exec_wait(self, time): # wait statement execution function
         sleep(time)
 
-    def interpret(self, source, in_function: bool, function_name: str = ''): 
-        for statement in source:
-            ### AMM | Variables ### 
-            if statement['type'] == 'assignment': 
-                if in_function:
-                    variable_name = statement["var"]
-                    variable_value = statement['data'][1]
-                    self.memory.store_func_variable(
-                                                    function_name=function_name, 
-                                                    variable=variable_name, 
-                                                    value=variable_value
-                                                    )
-                else: 
-                    variable_name = statement['var']
-                    variable_value = statement['data'][1]
-                    self.memory.store_variable(variable=variable_name, value=variable_value)
-            ### AMM | Functions - Content - Parameter Names ### 
-            elif statement['type'] == 'function': 
-                ## Content ##
-                function_name = statement['name']
-                function_content = statement['code']
-                self.memory.store_function_content(function=function_name, content=function_content)
+    def assign_variable(self, statement, inside_function: bool, func_name: str): # Variable AMM Snippet used @ Interpret Method
+        if inside_function:
+            variable_name = statement["var"]
+            variable_value = statement['data'][1]
+            self.memory.store_func_variable(
+                                            function_name=func_name,
+                                            variable=variable_name,
+                                            value=variable_value
+                                           )
+        else:
+            variable_name = statement['var']
+            variable_value = statement['data'][1]
+            self.memory.store_variable(variable=variable_name, value=variable_value)
 
-                ## Parameter Names ##
-                parameters = statement['parameters']
-                self.memory.store_function_parameter(function=function_name, parameters=parameters)
-            ### AMM | Function Parameter Values ###
-            elif statement['type'] == 'call': 
-                function_name = statement['name']
-                param_vals = statement['params'] 
-                self.memory.assign_parameter_mem(
-                                                 values=param_vals,
-                                                 params=function_parameter_storage[function_name],
-                                                 name=function_name
-                                                )
-                self._exec_function(func_name=function_name)
-            ### Statement Execution ###
-            elif statement['type'] == 'statement': 
-                if statement['name'] == 'say':
-                    parameter_type = statement['params'][0][0]
-                    parameter_name = statement['params'][0][1]                                      
-                    if parameter_type == 'var': 
-                        if in_function:                                      
-                            try: 
-                                output_msg = function_parameter_val_storage[function_name][parameter_name][1] 
-                            except KeyError: 
-                                try: 
-                                    output_msg = function_variable_storage[function_name][parameter_name]
-                                except KeyError:
-                                    try: 
-                                        output_msg = variable_storage[parameter_name]
-                                    except KeyError:
-                                        output_msg = statement['params'][0][1]
-                        else: 
-                            try: 
-                                output_msg = variable_storage[parameter_name]
-                            except KeyError: 
-                                output_msg = parameter_name
-                else: 
-                    output_msg = parameter_name
-                self._exec_say(out=output_msg)
-                if statement['name'] == 'wait': 
-                    if in_function: 
-                        parameter_name = statement['params'][0][1]                                  # Access Specifier
+    def assign_function(self, statement: dict, func_name: str):
+        function_name = statement['name']
+        function_content = statement['code']
+        self.memory.store_function_content(function=function_name, content=function_content)
+
+        parameters = statement['parameters']
+        self.memory.store_function_parameter(function=function_name, parameters=parameters)
+
+    def call_function(self, statement: dict, function_name: str):
+        function_name = statement['name']
+        param_vals = statement['params'] 
+        self.memory.assign_parameter_mem(
+                                         values=param_vals,
+                                         params=function_parameter_storage[function_name],
+                                         name=function_name
+                                        )
+        self._exec_function(func_name=function_name)
+
+    def call_statement(self, statement: dict, inside_function: bool, func_name: str): # base statement execution
+        parameter_type = statement['params'][0][0]  # Parameter Type Handle ('var', 'str', ...)
+        parameter_name = statement['params'][0][1]  # Parameter Name Handle
+        if parameter_type == 'var':                                                 #-----------------VARIABLE==TRUE------------------
+            if inside_function:                                                         #-----------------INSIDE-FUNC-----------------
+                try:                                                                    #-----------------INSIDE-FUNC-----------------
+                    val = function_parameter_val_storage[func_name][parameter_name][1]  # Trying to get param storage (First prior)
+                except KeyError: 
+                    try: 
+                        val = function_variable_storage[func_name][parameter_name]      # Trying to get local scope func storage (2. prior)
+                    except KeyError:
                         try: 
-                            sec = function_parameter_val_storage[function_name][parameter_name][1]  # Trying to Get Corresponding Param Value
+                            val = variable_storage[parameter_name]                      # Trying to get global scope variable storage (3. prior)
                         except KeyError:
-                            try: 
-                                sec = variable_storage[parameter_name]                              # Trying to Get Corresponding Var Value
-                            except KeyError: 
-                                sec = statement['params'][0][1]                                     # Trying to Get raw output
-                    self._exec_wait(time=sec)
+                            val = statement['params'][0][1]                             # Trying to get non-AMM implemented parameter (Last prior)
+            
+            else:                                                                       #----------------OUTSIDE-FUNC----------------
+                try:                                                                    #----------------OUTSIDE-FUNC----------------
+                    val = variable_storage[parameter_name]                              # Trying to get variable storage (First prior)
+                except KeyError: 
+                    val = statement['params'][0][1]                                     # Trying to get non-AMM implemented parameter (Last prior)
+        else:                                                                       #-----------------VARIABLE==FALSE------------------
+            val = statement['params'][0][1]                                         # Trying to get non-AMM implemented parameter (Always prior)
+        
+        return val                                                              # Returning, Now, Handled Parameter
+
+
+    # Main Method - Uses a lot of function from above this line ^^^^
+    def interpret(self, source, in_function: bool, function_name: str = ''): 
+        # main interpreting loop
+        for statement in source:
+            ### AMM | Variable Storage ###
+            if statement['type'] == 'assignment':
+                self.assign_variable(statement=statement, inside_function=in_function, func_name=function_name) # AMM | Storing Variables
+
+            ### AMM | Function Content & Parameter Name Storage ### 
+            elif statement['type'] == 'function': 
+                self.assign_function(statement=statement, func_name=function_name)  # AMM | Storing Function Params Names & Content
+
+            ### AMM | Function Calling ###
+            elif statement['type'] == 'call':
+                self.call_function(statement=statement, function_name=function_name) # AMM | Calling Storage And Executing Function
+
+            ### Statement Execution ###
+            elif statement['type'] == 'statement':
+                ### Say Statement ###
+                if statement['name'] == 'say':
+                    out = self.call_statement(statement=statement, inside_function=in_function, func_name=function_name)    # AMM | Param Handling
+                    self._exec_say(out=out)     # Executing Statement with handled parameter/s
+                ### Wait Statement ###
+                elif statement['name'] == 'wait':
+                    sec = self.call_statement(statement=statement, inside_function=in_function, func_name=function_name)    # AMM | Param Handling
+                    self._exec_wait(time=sec)   # Executing Statement with handled parameter/s
                     
 
-dev = Dev()
-mem = Memory()
+dev = Dev()     # Dev Tool Instance Initialization
+mem = Memory()  # Memory Instance Initialization
 Interpreter = Interpreter(
-                            dev=dev,
-                            memory=mem,
-                            src_path='_PATH_' ### Will be updated to an automatic version in the future
+                            dev=dev,                                                                                # Dev-Tools 
+                            memory=mem,                                                                             # AMM | Memory Handling
+                            src_path=r'_PATH_'                                                                      # _PATH_
                         )
 
-# CLS Instance Method Initialization
-Interpreter.interpret(source=Interpreter.content, in_function=False)
+Interpreter.interpret(source=Interpreter.content, in_function=False) # Main Interpreting Method
