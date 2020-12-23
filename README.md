@@ -8,7 +8,7 @@ Astro Scripting (short: ASX), is a simple, interpreted scripting language implem
 
 ## Syntax
 ### Variables
-Because Astro is an dynamic typed language, so you don't have to specify the types.
+Because Astro is an dynamic typed language, you don't have to specify the types.
 ```
 var = 12
 x = 12 * var
