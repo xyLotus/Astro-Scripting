@@ -77,9 +77,9 @@ value of the time_str we specified earlier.
 ```py
 astro_string = apy.models.String.new('current_time', time_str)
 ```
-Now we need to export the astro string back to the variable scope using `set_variable()`.
+Now we need to export the astro string back to the variable scope using `set()`.
 ```py
-scope.set_variable('current_time', astro_string)
+scope.set('current_time', astro_string)
 ```
 The final element in our function is actually returning the scope back to the interpreter, so `return scope.format()` will do.
 **Be sure to return this at the end of the function, or else your code will not run!**
