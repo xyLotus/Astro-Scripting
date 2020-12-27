@@ -99,4 +99,4 @@ def __build__():
 ```
 
 Thats it! Place your files in the correct folders and off you go coding in astro! The source code for this small project can be found 
-**[here](https://github.com/xyLotus/astro/tree/main/examples/Time%20module)**.
+**[here](https://github.com/xyLotus/astro/tree/main/examples/Time)**.
