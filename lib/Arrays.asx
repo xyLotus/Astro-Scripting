@@ -5,25 +5,23 @@
     contains the len() function, which returns the length
     of the array.
 
-    Note: This is currently only in the testing stage, as
-    interpreters for this language still do not exist. 
-
     @author   bellrise
     @version  0.1
 
 --/
 
-/-- Temporary variable, used for storing data.
-All temporary data is assigned to this __temp variable,
-to keep memory usage as low as possible. --/
-__temp = 0
-
 
 /-- Returns the length of an array --/
 #len(buf):
-    e = 0
-    while True:
-        try:
-            __temp = buf[e]
-        else:
-            return e
+    length = 0
+    @mixin __Arrays#len
+    return length
+
+
+
+/-- Collects the whole array into one string, turns
+every element into a string before adding to the string. --/
+#join(buf, between):
+    joined = ""
+    @mixin __Arrays#join
+    return joined
