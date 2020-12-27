@@ -2,7 +2,7 @@
 ![Implementation](https://img.shields.io/badge/Implementation-Python%203.9-%2300A3E0?logo=python)
 ![Version](https://img.shields.io/badge/Version-0.3-%2333aa33?logo=gitea)
 ![Lines](https://img.shields.io/tokei/lines/github/xyLotus/Astro-Scripting?label=Total%20lines&logo=stackoverflow)
-![Issues](https://img.shields.io/github/issues/xyLotus/Astro-Scripting?label=Issues&logo=elastic-stack)
+![Issues](https://img.shields.io/github/issues/xyLotus/Astro-Scripting?label=Issues)
 
 Astro Scripting (short: ASX), is a simple, interpreted scripting language implemented in Python.
 
