@@ -98,5 +98,5 @@ def __build__():
     ]
 ```
 
-Thats it! Place your files in the correct folders and off you go coding in astro! The source code for this small project can be found 
-**[here](https://github.com/xyLotus/astro/tree/main/examples/Time)**.
+Thats it! Place the `m_time.py` file in the `mixins` folder and the `Time.asx` script in the `lib` folder and off you go coding in astro!
+The source code for this small project can be found **[here](https://github.com/xyLotus/astro/tree/main/examples/Time)**.
