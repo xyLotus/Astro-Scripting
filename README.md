@@ -1,6 +1,6 @@
 # The Astro Scripting Language
 ![Implementation](https://img.shields.io/badge/Implementation-Python%203.9-%2300A3E0?logo=python)
-![Version](https://img.shields.io/badge/Version-0.3-%2333aa33?logo=gitea)
+![Version](https://img.shields.io/badge/Version-0.4-%2333aa33?logo=gitea)
 ![Lines](https://img.shields.io/tokei/lines/github/xyLotus/astro?label=Total%20lines&logo=stackoverflow)
 ![Issues](https://img.shields.io/github/issues/xyLotus/astro?label=Issues)
 
