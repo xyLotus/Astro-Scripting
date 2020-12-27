@@ -1,0 +1,112 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "Astro Shell Executable",
+	"patterns": [
+		{
+			"include": "#strings"
+        },
+        {
+            "include": "#functions"
+        },
+        {
+            "include": "#inline-comment"
+        },
+        {
+            "include": "#multiline-comment"
+        },
+        {
+            "include": "#number"
+        },
+        {
+            "include": "#params"
+        },
+        {
+			"include": "#keywords"
+		},
+		{
+			"include": "#modules"
+        },
+        {
+            "include": "#fields"
+        },
+        {
+            "include": "#booleans"
+        },
+        {
+            "include": "#mixin"
+        }
+	],
+	"repository": {
+		"mixin": {
+			"patterns": [{
+                "name": "variable.parameter",
+                "match": "(@mixin|@inject)"
+			}]
+		},
+        "booleans": {
+            "patterns": [{
+                "name": "constant.language",
+                "match": "\\b(True|False)\\b"
+            }]
+        },
+		"fields": {
+			"patterns": [{
+				"name": "variable.name",
+				"match": "\\.[_A-z]+"   
+			}]
+		},
+		"modules": {
+			"patterns": [{
+				"name": "variable.parameter",
+				"match": "[_A-z]+\\."
+			}]
+		},
+        "number": {
+            "patterns": [{
+                "name": "constant.numeric",
+                "match": "[0-9.]"
+            }]
+        },
+        "params": {
+            "patterns": [{
+                "name": "variable.parameter",
+                "match": "(?<=\\().*(?<!\\))"
+            }]
+        },
+        "inline-comment": {
+            "patterns": [{
+                "name": "comment.line.percentage",
+                "match": "--[ -z]+"
+            }]
+        },
+        "multiline-comment": {
+            "name": "comment.block",
+            "begin": "/--",
+            "end": "--/"
+        },
+        "keywords": {
+			"patterns": [{
+				"name": "keyword.control.asx",
+				"match": "\\b(if|do|return|say|wait|input|exit|import|elif|else|try|while|pass)\\b"
+			}]
+		},
+		"strings": {
+			"name": "string.quoted.double.asx",
+			"begin": "\"",
+			"end": "\"",
+			"patterns": [
+				{
+					"name": "constant.character.escape.asx",
+					"match": "\\\\."
+				}
+			]
+        },
+        "functions": {
+            "patterns": [{
+                "name": "entity.name.function",
+                "match": "#[A-z]+"
+            }]
+        }
+	},
+	"scopeName": "source.asx"
+}
