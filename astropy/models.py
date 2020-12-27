@@ -10,11 +10,11 @@ class Variable(ABC):
 
     # Additional slots, this is for speeding up the variable object
     # and decreasing the memory usage of such object.
-    __slots__ = ('__length', )
+    __slots__ = ('_length', )
 
-    __name = None
-    __type = None
-    __data = None
+    _name = None
+    _type = None
+    _data = None
 
     @classmethod
     @abstractmethod
@@ -24,15 +24,25 @@ class Variable(ABC):
 
     def get(self):
         """ Returns a pythonic version of the number. """
-        return self.__data
+        return self._data
 
     def nameof(self):
         """ Returns the name of the variable. """
-        return self.__name
+        return self._name
 
     def typeof(self):
         """ Returns the type of the variable. """
-        return self.__type
+        return self._type
+
+    def __str__(self):
+        """ Returns the basic string representation of the variable.
+        Works pretty much the same as the __repr__. """
+        return f'{self.__class__.__name__}({self.nameof()}, {self.get()})'
+
+    def __repr__(self):
+        """ Returns the representation of the object. Currently
+        just returns the __str__ method with a 'models.' prefix """
+        return 'models.' + self.__str__()
 
 
 class String(Variable):
@@ -46,21 +56,18 @@ class String(Variable):
         return String(name, data)
 
     def __init__(self, name: str, data: Union[str, bytes]):
-        self.__name = name
+        self._name = name
         if isinstance(data, bytes):
-            self.__data = str(data, 'utf8')
+            self._data = str(data, 'utf8')
         else:
-            self.__data = str(data)
-        self.__type = 'str'
+            self._data = str(data)
+        self._type = 'str'
 
     def set(self, data: str):
         """ Set the astro String to the python str """
         if not isinstance(data, str):
             raise TypeError('the passed object is not a string')
-        self.__data = data
-
-    def __str__(self):
-        return f'String({self.nameof()}, {self.get()})'
+        self._data = data
 
 
 class Num(Variable):
@@ -75,13 +82,10 @@ class Num(Variable):
         return Num(name, data)
 
     def __init__(self, name: str, data):
-        """  """
-        self.__name = name
-        self.__data = data
-        self.__type = 'num'
-
-    def __str__(self):
-        return f'Num({self.nameof()}, {self.get()})'
+        """ Constructor """
+        self._name = name
+        self._data = data
+        self._type = 'num'
 
     def __add__(self, other):
         return self.get() + other.get()
@@ -128,7 +132,7 @@ class Num(Variable):
 class Array(Variable):
     """ A multi-type array. """
 
-    __length: int = 0
+    _length: int = 0
 
     @classmethod
     def new(cls, name: str, data: list):
@@ -140,21 +144,18 @@ class Array(Variable):
 
     def __init__(self, name: str, data):
         """ Sets up additional data """
-        self.__name = name
-        self.__data = data
-        self.__type = 'arr'
-        self.__length = len(data)
-
-    def __str__(self):
-        return f'Array({self.nameof()}, {self.get()})'
+        self._name = name
+        self._data = data
+        self._type = 'arr'
+        self._length = len(data)
 
     def __len__(self):
         """ Returns the length of the saved array. """
-        return self.__length
+        return self._length
 
     def get(self):
         """ Returns the array in python form """
-        return self.__data
+        return self._data
 
     def set(self, array: list):
         """ Sets the astro array to the python array. """
@@ -162,16 +163,16 @@ class Array(Variable):
         for i in array:
             if not issubclass(i, Variable):
                 raise TypeError(f'non-astro data type in array')
-        self.__data = array
-        self.__length = len(array)
+        self._data = array
+        self._length = len(array)
 
 
-def create(var: dict):
+def create(name, value):
     """ Returns a variable object from the tuple. """
-    if var['type'] == 'str':
-        return String(var['name'], var['data'])
-    if var['type'] == 'num':
-        return Num(var['name'], var['data'])
-    if var['type'] == 'arr':
-        return Array(var['name'], var['data'])
-    raise TypeError('astropy does not support the %s data type' % var[0])
+    if value[0] == 'str':
+        return String(name, value[1])
+    if value[0] == 'num':
+        return Num(name, value[1])
+    if value[0] == 'arr':
+        return Array(name, value[1])
+    raise TypeError('astropy does not support the %s data type' % value[0])
