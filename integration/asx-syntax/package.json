@@ -1,0 +1,26 @@
+{
+    "name": "asx-syntax",
+    "displayName": "ASX-Syntax",
+    "description": "Adds syntax highlighting to .asx scripts.",
+	"author": "bellrise",
+    "version": "0.0.1",
+    "engines": {
+        "vscode": "^1.51.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [{
+            "id": "asx",
+            "aliases": ["Astro Shell Executable", "asx"],
+            "extensions": [".asx"],
+            "configuration": "./language-configuration.json"
+        }],
+        "grammars": [{
+            "language": "asx",
+            "scopeName": "source.asx",
+            "path": "./syntaxes/asx.tmLanguage.json"
+        }]
+    }
+}
