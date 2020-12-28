@@ -85,15 +85,6 @@ class Dev:
             for _ in msg: 
                 print(msg, end=' ')
         
-    def specify_parse(self, parse_content, specification: int, optional_specification: str):
-        try: 
-            if optional_specification == '':
-                parse_content[specification]
-            else: 
-                parse_content[specification][optional_specification]
-        except Exception as Ex:
-            error_out(Ex)
-
     def out_mem(self, mem_type: dict):
         print(f'Memory: {mem_type}')
 
@@ -242,7 +233,7 @@ mem = Memory()  # Memory Instance Initialization
 Interpreter = Interpreter(
                             dev=dev,                                                                                # Dev-Tools 
                             memory=mem,                                                                             # AMM | Memory Handling
-                            src_path='_PATH_'                                                                       # _PATH_
+                            src_path=r'PATH'                                                                        # _PATH_
                         )
 
 Interpreter.interpret(source=Interpreter.content, in_function=False) # Main Interpreting Method
