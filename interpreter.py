@@ -37,16 +37,22 @@
     - Interpret Method -> Main Method
     - A Lot Of New Comments
 
+* 0.5
+    -- Memory Handling Patch --
+    - AMM | "function parameter value storage" deleted
+    - AMM | "function variable storage" merged with the "function parameter value storage"
+    - AMM | You can now change parameter values inside of the given function
+
 '''
 
 __author__ = 'Lotus'
-__version__ = '0.4'
+__version__ = '0.5'
 
 def error_out(error_message: str): 
     print(f' * [ERROR] | {error_message}')
 
 try:
-    import asp.asp3 as asp  # Parser import
+    import asp.asp3 as asp          # Parser import
     from time import sleep          # Pausing the program
     import sys                      # PATH
 except ImportError as ImportErr:
@@ -56,8 +62,7 @@ except ImportError as ImportErr:
 
 # AMM - Astro Memory Management
 variable_storage = {}                   # Global Scope  |   Variable Names & Values         | Main Storage
-function_variable_storage = {}          # Local Scope   |   Function Var Storage            | Main Storage
-function_parameter_val_storage = {}     # Global-Local  |   Parameter Names & Values        | Main Storage
+function_variable_storage = {}          # Local Scope   |   Function Var Storage            | Main Storage ### TODO MERGE with function function_parameter_val_storage
 function_storage = {}                   # Global-Local  |   Function Content                | Sub-Storage
 function_parameter_storage = {}         # Global-Local  |   Parameter Names                 | Sub-Storage
 
@@ -72,6 +77,14 @@ def _get_parse(src_file: str):  # Getting Parsed Code (ASP Module)
 
 
 class Dev:
+    def __init__(self): 
+        self.debug_mode = False
+
+    def debug(self, *msg): 
+        if self.debug_mode: 
+            for _ in msg: 
+                print(msg, end=' ')
+        
     def specify_parse(self, parse_content, specification: int, optional_specification: str):
         try: 
             if optional_specification == '':
@@ -84,6 +97,8 @@ class Dev:
     def out_mem(self, mem_type: dict):
         print(f'Memory: {mem_type}')
 
+
+dev = Dev()     # Dev Tool Instance Initialization
 
 class Memory: 
     def __init__(self): 
@@ -109,18 +124,18 @@ class Memory:
         for value, param in zip(values, params):
             args[param] = value             
 
-        function_parameter_val_storage[name] = args
+        function_variable_storage[name] = args
 
 
-class Math: 
+class Math:
     def __init__(self): 
         pass
 
-    def prioritise(self): 
+    def prioritise(self):
         pass
 
 
-class Interpreter: 
+class Interpreter:
     def __init__(self, memory, dev, src_path):
         self.dev = dev
         self.memory = memory
@@ -130,7 +145,7 @@ class Interpreter:
         self.interpret(source=function_storage[func_name], in_function=True, function_name=func_name)
 
     def _exec_say(self, out):   # say statement execution function
-        print(out)
+        print(out[1])
 
     def _exec_wait(self, time): # wait statement execution function
         sleep(time)
@@ -138,7 +153,7 @@ class Interpreter:
     def assign_variable(self, statement, inside_function: bool, func_name: str): # Variable AMM Snippet used @ Interpret Method
         if inside_function:
             variable_name = statement["var"]
-            variable_value = statement['data'][1]
+            variable_value = statement['data']
             self.memory.store_func_variable(
                                             function_name=func_name,
                                             variable=variable_name,
@@ -146,7 +161,7 @@ class Interpreter:
                                            )
         else:
             variable_name = statement['var']
-            variable_value = statement['data'][1]
+            variable_value = statement['data']
             self.memory.store_variable(variable=variable_name, value=variable_value)
 
     def assign_function(self, statement: dict, func_name: str):
@@ -170,34 +185,33 @@ class Interpreter:
     def call_statement(self, statement: dict, inside_function: bool, func_name: str): # base statement execution
         parameter_type = statement['params'][0][0]  # Parameter Type Handle ('var', 'str', ...)
         parameter_name = statement['params'][0][1]  # Parameter Name Handle
-        if parameter_type == 'var':                                                 #-----------------VARIABLE==TRUE------------------
+        if parameter_type == 'var':                                                  #-----------------VARIABLE==TRUE------------------
             if inside_function:                                                         #-----------------INSIDE-FUNC-----------------
-                try:                                                                    #-----------------INSIDE-FUNC-----------------
-                    val = function_parameter_val_storage[func_name][parameter_name][1]  # Trying to get param storage (First prior)
-                except KeyError: 
+                try:                                                                    #-----------------INSIDE-FUNC----------------- 
+                    val = function_variable_storage[func_name][parameter_name]      # Trying to get local scope func storage (2. prior)
+                except KeyError:
                     try: 
-                        val = function_variable_storage[func_name][parameter_name]      # Trying to get local scope func storage (2. prior)
+                        val = variable_storage[parameter_name]                      # Trying to get global scope variable storage (3. prior)
                     except KeyError:
-                        try: 
-                            val = variable_storage[parameter_name]                      # Trying to get global scope variable storage (3. prior)
-                        except KeyError:
-                            val = statement['params'][0][1]                             # Trying to get non-AMM implemented parameter (Last prior)
-            
+                        val = statement['params'][0]                                   # Trying to get non-AMM implemented parameter (Last prior)
             else:                                                                       #----------------OUTSIDE-FUNC----------------
                 try:                                                                    #----------------OUTSIDE-FUNC----------------
                     val = variable_storage[parameter_name]                              # Trying to get variable storage (First prior)
                 except KeyError: 
-                    val = statement['params'][0][1]                                     # Trying to get non-AMM implemented parameter (Last prior)
+                    val = statement['params'][0]                                      # Trying to get non-AMM implemented parameter (Last prior)
         else:                                                                       #-----------------VARIABLE==FALSE------------------
-            val = statement['params'][0][1]                                         # Trying to get non-AMM implemented parameter (Always prior)
+            val = statement['params'][0]                                             # Trying to get non-AMM implemented parameter (Always prior)
         
         return val                                                              # Returning, Now, Handled Parameter
 
+    def call_if(self, statement: dict):     ### TODO Finish If-Statement Checking Function, return True / False
+        check_bool = False
 
     # Main Method - Uses a lot of function from above this line ^^^^
     def interpret(self, source, in_function: bool, function_name: str = ''): 
         # main interpreting loop
         for statement in source:
+            # print('Statement: ', statement) ### TODO RE-ENABLE
             ### AMM | Variable Storage ###
             if statement['type'] == 'assignment':
                 self.assign_variable(statement=statement, inside_function=in_function, func_name=function_name) # AMM | Storing Variables
@@ -217,17 +231,18 @@ class Interpreter:
                     out = self.call_statement(statement=statement, inside_function=in_function, func_name=function_name)    # AMM | Param Handling
                     self._exec_say(out=out)     # Executing Statement with handled parameter/s
                 ### Wait Statement ###
-                elif statement['name'] == 'wait':
-                    sec = self.call_statement(statement=statement, inside_function=in_function, func_name=function_name)    # AMM | Param Handling
+                elif statement['name'] == 'pause':
+                    sec = self.call_statement(statement=statement, inside_function=in_function, func_name=function_name)[1]    # AMM | Param Handling
                     self._exec_wait(time=sec)   # Executing Statement with handled parameter/s
-                    
+            elif statement['type'] == 'if': 
+                self.call_if(statement=statement)
 
-dev = Dev()     # Dev Tool Instance Initialization
+
 mem = Memory()  # Memory Instance Initialization
 Interpreter = Interpreter(
                             dev=dev,                                                                                # Dev-Tools 
                             memory=mem,                                                                             # AMM | Memory Handling
-                            src_path=r'_PATH_'                                                                      # _PATH_
+                            src_path='_PATH_'                                                                       # _PATH_
                         )
 
 Interpreter.interpret(source=Interpreter.content, in_function=False) # Main Interpreting Method
