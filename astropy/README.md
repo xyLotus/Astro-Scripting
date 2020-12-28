@@ -18,12 +18,14 @@ a couple of examples, and a simple project - writing a function that returns the
   - `undef_parameter`
   - `undef_function`
   - `type_error`
+  - `file_error`
 
 * `models` Variable objects for a layer of abstraction on the astro interepreter format.
   - `Variable` base variable object
   - `String` string type
   - `Num` number type
   - `Array` list type
+  - `Bool` boolean type
   - `create()` automatic object creation from var format
   
   
