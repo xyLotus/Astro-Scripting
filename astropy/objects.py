@@ -6,7 +6,7 @@ from typing import Union, Dict
 from . import models
 
 # The Variable type
-var_t = Union[models.Num, models.Array, models.String]
+var_t = Union[models.Num, models.Array, models.String, models.Bool]
 
 
 class Scope:
@@ -29,6 +29,10 @@ class Scope:
             return self.__vars[name]
         except KeyError:
             return default
+
+    def place(self, var: var_t):
+        """ Place the variable onto the scope, without needing its name. """
+        self.set(var.nameof(), var)
 
     def set(self, name: str, var: var_t):
         """ Set the variable """
