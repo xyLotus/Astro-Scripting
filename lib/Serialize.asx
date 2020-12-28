@@ -1,0 +1,24 @@
+/-- 
+    The Serialize library provides serialization methods for
+    the base Astro types into JSON or a more compact, bytes
+    form. Because Astro cannot work with byte strings, the 
+    methods automatically write to an output file of your 
+    choice. 
+
+    @author   bellrise
+    @version  0.1
+
+--/
+
+/-- Serialize the object into a special format used in only
+ -- this library and write it to a file. --/
+#serialize(object, filename):
+    @mixin __Serialize#serialize
+
+
+/-- Deserialize the bytes from the given filename and return
+ -- them in an Astro format. --/
+#deserialize(filename):
+    object = 0
+    @mixin __Serialize#deserialize
+    return object
