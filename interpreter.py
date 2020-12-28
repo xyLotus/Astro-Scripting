@@ -43,10 +43,15 @@
     - AMM | "function variable storage" merged with the "function parameter value storage"
     - AMM | You can now change parameter values inside of the given function
 
+* 0.6
+    -- Argument Parsing -- 
+    - Added argparsing with the argparse module
+    - You are now able to execute files after setting up the ASX-Entrypoint
+    - ^ (See wiki page -> Setup Astro! [Not finished yet])
 '''
 
 __author__ = 'Lotus'
-__version__ = '0.5'
+__version__ = '0.6'
 
 def error_out(error_message: str): 
     print(f' * [ERROR] | {error_message}')
@@ -55,9 +60,20 @@ try:
     import asp.asp3 as asp          # Parser import
     from time import sleep          # Pausing the program
     import sys                      # PATH
+    import argparse                 # argument parsing
 except ImportError as ImportErr:
     error_out(f'Critical Import Error -> {ImportErr}')
     exit()
+
+
+# Argument parsing
+parser = argparse.ArgumentParser() # Initializing the ArgumentParser
+
+# Adding arguments
+parser.add_argument('asx', help='Name of the file')
+args = parser.parse_args()
+
+script_name = args.asx
 
 
 # AMM - Astro Memory Management
@@ -233,7 +249,7 @@ mem = Memory()  # Memory Instance Initialization
 Interpreter = Interpreter(
                             dev=dev,                                                                                # Dev-Tools 
                             memory=mem,                                                                             # AMM | Memory Handling
-                            src_path=r'PATH'                                                                        # _PATH_
+                            src_path=r'PATH'  # _PATH_
                         )
 
 Interpreter.interpret(source=Interpreter.content, in_function=False) # Main Interpreting Method
