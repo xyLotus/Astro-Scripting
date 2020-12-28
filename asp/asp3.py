@@ -58,7 +58,7 @@ library.
 import re
 
 __author__  = 'bellrise'
-__version__ = '3.4.4'
+__version__ = '3.4.6'
 
 # This is the format version of the code object generated
 # by the parser, each new format is most probably incompatible
@@ -396,15 +396,30 @@ class _Parser:
             except ValueError:
                 pass
 
+        if len(line) <= 1:
+            raise SyntaxError(f'Invalid equation @ line {num}')
+
         return line
 
 
     def parse_args(self, line, num):
         """ Parses the text and returns a data collected argument
         list. """
+
+        # Omitting commas in lists
+        levels = 0
+        omits = []
+        for i, c in enumerate(self.hash_strings(line, num)):
+            if c == '[':
+                levels += 1
+            if c == ']':
+                levels -= 1
+            if levels >= 1 and c == ',':
+                omits.append(i)
+
         splits = []
         for i, c in enumerate(self.hash_strings(line, num)):
-            if c == ',': splits.append(i)
+            if c == ',' and not omits: splits.append(i)
 
         if splits:
             data = []
@@ -478,7 +493,7 @@ class _Parser:
                     if re.match('.*\W.*', data):
                         try:
                             data = self.parse_math(data, num)
-                            return 'maf', data
+                            return 'math', data
                         except SyntaxError:
                             raise SyntaxError(f'Invalid variable name @ line {num}')
 
@@ -624,6 +639,12 @@ class _Parser:
         text = line[2]
 
         var, data = (s.strip() for s in text.split('='))
+
+        params = self.hash_strings(data, index)
+        if '#' in params and '[' not in params and ']' not in params:
+            for c in params:
+                if c != '#':
+                    raise SyntaxError(f'Invalid syntax @ line {index}')
 
         data = self.variable(data, index)
 
