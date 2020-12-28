@@ -249,7 +249,7 @@ mem = Memory()  # Memory Instance Initialization
 Interpreter = Interpreter(
                             dev=dev,                                                                                # Dev-Tools 
                             memory=mem,                                                                             # AMM | Memory Handling
-                            src_path=r'PATH'  # _PATH_
+                            src_path=script_name                                                                    # _PATH_
                         )
 
 Interpreter.interpret(source=Interpreter.content, in_function=False) # Main Interpreting Method
