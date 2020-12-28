@@ -58,7 +58,7 @@ library.
 import re
 
 __author__  = 'bellrise'
-__version__ = '3.4.3'
+__version__ = '3.4.4'
 
 # This is the format version of the code object generated
 # by the parser, each new format is most probably incompatible
@@ -243,7 +243,9 @@ class _Parser:
         # will crash and burn and die and stop working, and this
         # is a lot easier then having to write a pusher which would
         # take another 30 lines. Trust me, I know what im doing.
-        lines.append([lines[-1][0]+1, 0, ''])
+        if lines: index = lines[-1][0]+1
+        else: index = 0
+        lines.append([index, 0, ''])
 
         # Recursive sorting to reach every level of statements,
         # also turns the code object format to such one that the
