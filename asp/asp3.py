@@ -58,7 +58,7 @@ library.
 import re
 
 __author__  = 'bellrise'
-__version__ = '3.4.0'
+__version__ = '3.4.3'
 
 # This is the format version of the code object generated
 # by the parser, each new format is most probably incompatible
@@ -431,6 +431,13 @@ class _Parser:
     def variable(self, data, num):
         """ Returns the proper version of the variable. The current
         types of variables this can return are: """
+        # bool - booleans
+
+        if data == 'True':
+            return 'bool', True
+        if data == 'False':
+            return 'bool', False
+
         try:
             # num - Number
             data = float(data)
@@ -483,7 +490,19 @@ class _Parser:
                     raise SyntaxError(f'Invalid variable format @ line {num}')
 
                 # str - String
-                data = ('str', data.strip()[1:-1])
+                escape_codes = {
+                    '\\n': '\n',
+                    '\\r': '\r',
+                    '\\t': '\t',
+                    '\\b': '\b',
+                    '\\q': '"'
+                }
+
+                string = data.strip()[1:-1]
+                for k, v in escape_codes.items():
+                    string = string.replace(k, v)
+
+                data = ('str', string)
 
         return data
 
