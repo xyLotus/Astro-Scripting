@@ -7,6 +7,7 @@ from . import models
 
 # The Variable type
 var_t = Union[models.Num, models.Array, models.String, models.Bool]
+var_tuple = (models.Num, models.Array, models.String, models.Bool)
 
 
 class Scope:
@@ -36,8 +37,13 @@ class Scope:
 
     def set(self, name: str, var: var_t):
         """ Set the variable """
-        if not isinstance(var, (models.Array, models.String, models.Num)):
-            raise TypeError('this only accepts astropy Variable objects')
+        if not isinstance(var, var_tuple):
+            raise TypeError('this only accepts astropy models')
+
+        if isinstance(var, models.Array):
+            # Convert each item into a astro version of it
+            for i, e in enumerate(var):
+                var[i] = (e.typeof(), e.get())
 
         self.__vars[name] = var
 

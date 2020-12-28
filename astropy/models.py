@@ -138,7 +138,7 @@ class Array(Variable):
     def new(cls, name: str, data: list):
         """ Creates a new array from the variable arra"""
         for i in data:
-            if not issubclass(i, Variable):
+            if not isinstance(i, (Array, Num, String, Bool)):
                 raise TypeError('non-astro data type in array')
         return Array(name, data)
 
@@ -157,10 +157,18 @@ class Array(Variable):
         """ Sets the astro array to the python array. """
         # Type checks
         for i in array:
-            if not issubclass(i, Variable):
+            if not isinstance(i, (Array, Num, String, Bool)):
                 raise TypeError(f'non-astro data type in array')
         self._data = array
         self._length = len(array)
+
+    def __getitem__(self, item):
+        """ Returns the model at the index """
+        return self._data[item]
+
+    def __setitem__(self, key, value):
+        """ Sets the model at the index to something else """
+        self._data[key] = value
 
 
 class Bool(Variable):
