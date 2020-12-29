@@ -186,7 +186,7 @@ class Interpreter:
                     else:
                         print(f'"{item[1]}",', end=' ')
                 else:
-                    if item_count == len(out):
+                    if item_count == len(out)-1:
                         print(f'{item[1]}', end='')
                     else:
                         print(f'{item[1]},', end=' ')
