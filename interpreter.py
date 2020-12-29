@@ -60,10 +60,16 @@
     -- Function Error Handling --
     - Added Function Error Handling
     - ^ Error Added: UndefinedFunction
+
+* 0.9
+    -- Array / List Output --
+    - Added multi value storing datatype output support
+    - [^ Thus meaning changes to the "_exec_say" function]
+    - Added correct String & Int output in list / array
 '''
 
 __author__ = 'Lotus'
-__version__ = '0.7'
+__version__ = '0.9'
 
 
 def error_out(error_message: str, ErrorType: str = 'ERROR'): 
@@ -168,8 +174,27 @@ class Interpreter:
     def _exec_function(self, func_name: str):   # executes function | used @ interpret method
             self.interpret(source=function_storage[func_name], in_function=True, function_name=func_name)
 
-    def _exec_say(self, out):   # say statement execution function
-        print(out[1])
+    def _exec_say(self, out, multi: bool):   # say statement execution function
+        if multi:
+            out = out[1]
+            print('[', end='')
+            item_count = 0
+            for item in out:
+                if item[0] == 'str':
+                    if item_count == len(out)-1:
+                        print(f'"{item[1]}"', end='')
+                    else:
+                        print(f'"{item[1]}",', end=' ')
+                else:
+                    if item_count == len(out):
+                        print(f'{item[1]}', end='')
+                    else:
+                        print(f'{item[1]},', end=' ')
+                    
+                item_count += 1
+            print(']')
+        else:
+            print(out[1])
 
     def _exec_wait(self, time): # wait statement execution function
         sleep(time)
@@ -262,7 +287,17 @@ class Interpreter:
                 ### Say Statement ###
                 if statement['name'] == 'say':
                     out = self.call_statement(statement=statement, inside_function=in_function, func_name=function_name)    # AMM | Param Handling
-                    self._exec_say(out=out)     # Executing Statement with handled parameter/s
+                    
+                    try:
+                        array_check = out[0]
+                        if array_check == 'arr':
+                            mult_bool = True
+                        else: 
+                            mult_bool = False
+                    except Exception:
+                        mult_bool = False
+
+                    self._exec_say(out=out, multi=mult_bool)     # Executing Statement with handled parameter/s
                 ### Wait Statement ###
                 elif statement['name'] == 'pause':
                     sec = self.call_statement(statement=statement, inside_function=in_function, func_name=function_name)[1]    # AMM | Param Handling
