@@ -53,16 +53,19 @@
 __author__ = 'Lotus'
 __version__ = '0.6'
 
-def error_out(error_message: str, importance_count: int): 
-    print(f' {"*"*importance_count} [ERROR] | {error_message}')
+# -> ErrorTypes <-
+
+def error_out(error_message: str, ErrorType: str = 'ERROR'): 
+    print(f' [{ErrorType}] | {error_message}')
 
 try:
     import asp.asp3 as asp          # Parser import
     from time import sleep          # Pausing the program
     import sys                      # PATH
     import argparse                 # argument parsing
+    from astropy.errors import *     # Error Handling
 except ImportError as ImportErr:
-    error_out(f'Critical Import Error -> {ImportErr}', 3)
+    error_out(f'Critical Import Error -> {ImportErr}')
     exit()
 
 
@@ -88,7 +91,7 @@ def _get_parse(src_file: str):  # Getting Parsed Code (ASP Module)
             code = asp.parse(file)
             return code
     except FileNotFoundError as FNF: 
-        error_out(FNF, 1)
+        error_out(FNF)
         exit()
 
 
@@ -194,29 +197,28 @@ class Interpreter:
 
     def call_statement(self, statement: dict, inside_function: bool, func_name: str): # base statement execution
         parameter_type = statement['params'][0][0]  # Parameter Type Handle ('var', 'str', ...)
-        parameter_name = statement['params'][0][1]  # Parameter Name Handle
-        if parameter_type == 'var':                                                  #-----------------VARIABLE==TRUE------------------
-            if inside_function:                                                         #-----------------INSIDE-FUNC-----------------
+        parameter_name = statement['params'][0][1]  # Parameter Name Handle                                                  #-----------------VARIABLE==TRUE------------------
+        if inside_function:
+            if parameter_type == 'var':                                                          #-----------------INSIDE-FUNC-----------------
                 try:                                                                    #-----------------INSIDE-FUNC----------------- 
                     val = function_variable_storage[func_name][parameter_name]      # Trying to get local scope func storage (2. prior)
                 except KeyError:
-                    if parameter_type == 'var':
-                        try: 
-                            val = variable_storage[parameter_name]                      # Trying to get global scope variable storage (3. prior)
-                        except KeyError:
-                            error_out(f'Undefined Variable: {parameter_name}', 2)
-                            quit()
-                    val = statement['params'][0]                                   # Trying to get non-AMM implemented parameter (Last prior)
-            else:
-                if parameter_type == 'var':                                                                       #----------------OUTSIDE-FUNC----------------
-                    try:                                                                    #----------------OUTSIDE-FUNC----------------
-                        val = variable_storage[parameter_name]                              # Trying to get variable storage (First prior)
+                    try: 
+                        val = variable_storage[parameter_name]                      # Trying to get global scope variable storage (3. prior)
                     except KeyError:
-                        error_out(f'Undefined Variable: {parameter_name}', 2) 
+                        error_out(f'Undefined Variable: {parameter_name}')
                         quit()
-                val = statement['params'][0]                                      # Trying to get non-AMM implemented parameter (Last prior)
-        else:                                                                      #-----------------VARIABLE==FALSE------------------
-            val = statement['params'][0]                                           # Trying to get non-AMM implemented parameter (Always prior)
+            else: 
+                val = statement['params'][0]                                   # Trying to get non-AMM implemented parameter (Last prior)
+        else:
+            if parameter_type == 'var':                                                                     #----------------OUTSIDE-FUNC----------------
+                try:                                                                    #----------------OUTSIDE-FUNC----------------
+                    val = variable_storage[parameter_name]                              # Trying to get variable storage (First prior)
+                except KeyError:
+                    error_out(f'Undefined Variable: {parameter_name}') 
+                    quit()
+            else: 
+                val = statement['params'][0]                                      # Trying to get non-AMM implemented parameter (Last prior)                                         # Trying to get non-AMM implemented parameter (Always prior)
         
         return val                                                              # Returning, Now, Handled Parameter
 
@@ -258,7 +260,7 @@ mem = Memory()  # Memory Instance Initialization
 Interpreter = Interpreter(
                             dev=dev,                                                                                # Dev-Tools 
                             memory=mem,                                                                             # AMM | Memory Handling
-                            src_path=script_name                                                                    # arg 2 in cmd
+                            src_path=script_name                                                                    # _PATH_
                         )
 
 Interpreter.interpret(source=Interpreter.content, in_function=False) # Main Interpreting Method
