@@ -58,7 +58,7 @@ library.
 import re
 
 __author__  = 'bellrise'
-__version__ = '3.4.6'
+__version__ = '3.4.7'
 
 # This is the format version of the code object generated
 # by the parser, each new format is most probably incompatible
@@ -195,6 +195,8 @@ class _Parser:
             structures = {
                 # Module import
                 r'import .*': self.parse_import,
+
+                r'delete .*': self.parse_delete,
 
                 # If block header
                 r'^if .*:.*': self.parse_if,
@@ -443,7 +445,7 @@ class _Parser:
     def parse_array(self, line, num):
         """ Parses the array """
         elements = self.parse_args(line[1:-1], num)
-        return 'arr', elements
+        return 'array', elements
 
     def variable(self, data, num):
         """ Returns the proper version of the variable. The current
@@ -464,7 +466,7 @@ class _Parser:
             if re.match(r'\[.*,.*\]', data):
                 # Array
                 elements = self.parse_args(data[1:-1], num)
-                data = ('arr', elements)
+                data = ('array', elements)
                 return data
 
             if re.match(r'\w+\.\w+', data):
@@ -612,6 +614,18 @@ class _Parser:
             line[0],
             line[1],
             {'type': 'import', 'name': import_}
+        ]
+
+    def parse_delete(self, line: tuple):
+        """ Parses a delete statement """
+        try:
+            delete_ = line[2].split()[1]
+        except IndexError:
+            raise SyntaxError(f'Delete statement cannot be empty @ line {line[0]}')
+        return [
+            line[0],
+            line[1],
+            {'type': 'delete', 'var': delete_}
         ]
 
     def parse_statement(self, line: tuple):
