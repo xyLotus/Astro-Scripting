@@ -1,0 +1,93 @@
+/-- 
+    This is the Array library containing useful tools
+    for operations on arrays and with arrays. This will
+    probably be included in the standard library as this
+    contains the len() function, which returns the length
+    of the array.
+
+    @author   bellrise
+    @version  0.3
+
+--/
+
+/-- Returns the length of an array 
+ --/
+#len(buf):
+    @mixin __Array#len
+    return length
+
+/-- Collects the whole array into one string, turns
+ - every element into a string before adding to the string. 
+ --/
+#join(buf, between):
+    @mixin __Array#join
+    return joined
+
+/-- Returns the sum of all numbers in the array. It also works
+ - for strings, as their length is calculated. If any other
+ - type is found in the array, it is discarded and not counted
+ - in to the total size. 
+ --/
+#sum(buf):
+    @mixin __Array#sum
+    return injection
+
+/-- Returns the average for all numbers in the array, if a string
+ - is found the length of the string is taken into consideration.
+ --/
+#average(buf):
+    @mixin __Array#average
+    return injection
+
+/-- Returns True if the item is found in the array, returns False
+ - if not.
+ --/
+#contains(buf, item):
+    @mixin __Array#contains
+    return injection
+
+/-- Returns the index of the first found item, returns -1 if no
+ - such item is found.
+ --/
+#find(buf, item):
+    @mixin __Array#find
+    return injection
+
+/-- Sorts the array in a particular way. Numbers come first and then
+ - strings. Each group of numbers and strings are sorted from smallest
+ - to largest and alphabetically.
+ --/
+#sort(buf):
+    @mixin __Array#sort
+    return injection
+
+/-- Reverses the whole array around. 
+ --/
+#reverse(buf):
+    @mixin __Array#reverse
+    return injection
+
+/-- Appends an item to the array. It it always put on the last place
+ - without exceptions.
+ --/
+#put(buf, item):
+    @mixin __Array#put
+    return injection
+
+/-- Removes an item from the array at the specified index, this results
+ - in shortening the array length by 1 and moving the items around so
+ - there aren't any spaces left. This is using a simple Python list in
+ - the background, so it happens automatically. This may not be the fastest,
+ - but that's not the point of this language.
+ --/
+#pop(buf, index):
+    @mixin __Array#pop
+    return injection
+
+/-- Joins two array together creating one single array. Note: do not
+ - mix this up with the Pythonic .append(), which adds a single item
+ - to the array. This is done by the put() function.
+ --/
+#append(buf, other):
+    @mixin __Array#append
+    return injection
