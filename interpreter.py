@@ -65,7 +65,6 @@
 __author__ = 'Lotus'
 __version__ = '0.7'
 
-# -> ErrorTypes <-
 
 def error_out(error_message: str, ErrorType: str = 'ERROR'): 
     print(f'[{ErrorType}] | {error_message}')
