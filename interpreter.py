@@ -48,15 +48,27 @@
     - Added argparsing with the argparse module
     - You are now able to execute files after setting up the ASX-Entrypoint
     - ^ (See wiki page -> Setup Astro! [Not finished yet])
+
+* 0.7
+    -- Variable Error Handling -- 
+    - Added Variable Error Handling
+    - ^ Corresponding error: UndefinedVariable / UndefinedParameter
+    - The error_out function output changed for error specification
+    - Added force quitting the program if an error occurs
+
+* 0.8
+    -- Function Error Handling --
+    - Added Function Error Handling
+    - ^ Error Added: UndefinedFunction
 '''
 
 __author__ = 'Lotus'
-__version__ = '0.6'
+__version__ = '0.7'
 
 # -> ErrorTypes <-
 
 def error_out(error_message: str, ErrorType: str = 'ERROR'): 
-    print(f' [{ErrorType}] | {error_message}')
+    print(f'[{ErrorType}] | {error_message}')
 
 try:
     import asp.asp3 as asp          # Parser import
@@ -155,7 +167,7 @@ class Interpreter:
         self.content = _get_parse(src_path)
         
     def _exec_function(self, func_name: str):   # executes function | used @ interpret method
-        self.interpret(source=function_storage[func_name], in_function=True, function_name=func_name)
+            self.interpret(source=function_storage[func_name], in_function=True, function_name=func_name)
 
     def _exec_say(self, out):   # say statement execution function
         print(out[1])
@@ -188,11 +200,15 @@ class Interpreter:
     def call_function(self, statement: dict, function_name: str):
         function_name = statement['name']
         param_vals = statement['params'] 
-        self.memory.assign_parameter_mem(
+        try: 
+            self.memory.assign_parameter_mem(
                                          values=param_vals,
                                          params=function_parameter_storage[function_name],
                                          name=function_name
                                         )
+        except KeyError: 
+            error_out(f'Function "{function_name}" not defined', undef_function)
+            quit()
         self._exec_function(func_name=function_name)
 
     def call_statement(self, statement: dict, inside_function: bool, func_name: str): # base statement execution
@@ -206,7 +222,7 @@ class Interpreter:
                     try: 
                         val = variable_storage[parameter_name]                      # Trying to get global scope variable storage (3. prior)
                     except KeyError:
-                        error_out(f'Undefined Variable: {parameter_name}')
+                        error_out(f'Variable "{parameter_name}" undefined', undef_var)
                         quit()
             else: 
                 val = statement['params'][0]                                   # Trying to get non-AMM implemented parameter (Last prior)
@@ -215,7 +231,7 @@ class Interpreter:
                 try:                                                                    #----------------OUTSIDE-FUNC----------------
                     val = variable_storage[parameter_name]                              # Trying to get variable storage (First prior)
                 except KeyError:
-                    error_out(f'Undefined Variable: {parameter_name}') 
+                    error_out(f'Variable "{parameter_name}" undefined', undef_var) 
                     quit()
             else: 
                 val = statement['params'][0]                                      # Trying to get non-AMM implemented parameter (Last prior)                                         # Trying to get non-AMM implemented parameter (Always prior)
