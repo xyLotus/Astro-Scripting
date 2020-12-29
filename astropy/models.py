@@ -34,6 +34,10 @@ class Variable(ABC):
         """ Returns the type of the variable. """
         return self._type
 
+    def raw(self):
+        """ Returns the astro format of the variable """
+        return self.typeof(), self.get()
+
     def __str__(self):
         """ Returns the basic string representation of the variable.
         Works pretty much the same as the __repr__. """

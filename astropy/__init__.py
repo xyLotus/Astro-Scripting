@@ -9,7 +9,7 @@ the current data in the scope.
 import re
 
 __author__  = 'bellrise'
-__version__ = '0.2.5'
+__version__ = '0.2.6'
 
 # Interface imports
 from .objects import Scope, Mixin
