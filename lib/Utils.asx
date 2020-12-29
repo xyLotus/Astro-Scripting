@@ -1,0 +1,36 @@
+/-- 
+    The Utils library provides multiple random utility functions
+    that would be too small to fit in their own library.
+
+    @author   bellrise
+    @version  0.1
+
+--/
+
+/-- Returns a pseudo-random number in the specified range.
+ --/
+#random(__a, __b):
+    @mixin __Utils#random
+    return injection
+
+/-- Returns a md5 hash from the specified string. Note: this
+ - is not supposed to be used as a safe password hash because it
+ - is easily crackable.
+ --/
+#md5(string):
+    @mixin __Utils#md5
+    return injection
+
+/-- Returns a sha512 hash from the specified string. This is the
+ - Linux password hashing standard and can be safely used in
+ - storing password shadows.
+ --/
+#sha512(string):
+    @mixin __Utils#sha512
+    return injection
+
+/-- Returns a random UUID for making unique element IDs.
+ --/
+#uuid():
+    @mixin __Utils#uuid
+    return injection
