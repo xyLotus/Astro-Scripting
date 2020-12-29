@@ -87,35 +87,40 @@ class Num(Variable):
         self._data = data
         self._type = 'num'
 
+    def _ch(self, other):
+        if isinstance(other, Num):
+            return other.get()
+        return other
+
     def __add__(self, other):
-        return self.get() + other.get()
+        return self.get() + self._ch(other)
 
     def __sub__(self, other):
-        return self.get() - other.get()
+        return self.get() - self._ch(other)
 
     def __ge__(self, other):
-        return self.get() >= other.get()
+        return self.get() >= self._ch(other)
 
     def __eq__(self, other):
-        return self.get() == other.get()
+        return self.get() == self._ch(other)
 
     def __floordiv__(self, other):
-        return self.get() // other.get()
+        return self.get() // self._ch(other)
 
     def __gt__(self, other):
-        return self.get() > other.get()
+        return self.get() > self._ch(other)
 
     def __le__(self, other):
-        return self.get() <= other.get()
+        return self.get() <= self._ch(other)
 
     def __lt__(self, other):
-        return self.get() < other.get()
+        return self.get() < self._ch(other)
 
     def __neg__(self):
         return -self.get()
 
     def __ne__(self, other):
-        return self.get() != other.get()
+        return self.get() != self._ch(other)
 
     def __pos__(self):
         return +self.get()
