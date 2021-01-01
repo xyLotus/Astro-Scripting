@@ -69,3 +69,4 @@ Change Log: (See Interpreter)
     -- New CMD Argument added -- 
     - "--ignoreErrors" argument added
     -  ^ outputs errors but doesn't exit program
+    - Note: Bugs could occur, it's easy to forget to catch an error
