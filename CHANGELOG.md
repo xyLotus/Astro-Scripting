@@ -64,3 +64,8 @@ Change Log: (See Interpreter)
     - Added multi value storing datatype output support
     - [^ Thus meaning changes to the "_exec_say" function]
     - Added correct String & Int output in list / array
+
+* 0.1.0
+    -- New CMD Argument added -- 
+    - "--ignoreErrors" argument added
+    -  ^ outputs errors but doesn't exit program
