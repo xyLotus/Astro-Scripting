@@ -1,21 +1,16 @@
 ''' ASX Interpreting / Execution '''
 
 __author__ = 'Lotus'
-__version__ = '0.0.9'
-
-
-def error_out(error_message: str, ErrorType: str = 'ERROR'): 
-    print(f'[{ErrorType}] | {error_message}')
+__version__ = '0.1.0'
 
 try:
     import asp.asp3 as asp          # Parser import
     from time import sleep          # Pausing the program
     import sys                      # PATH
     import argparse                 # argument parsing
-    from astropy.errors import *     # Error Handling
+    from astropy.errors import *    # Error Handling
 except ImportError as ImportErr:
     error_out(f'Critical Import Error -> {ImportErr}')
-    exit()
 
 
 # Argument parsing
@@ -23,10 +18,23 @@ parser = argparse.ArgumentParser() # Initializing the ArgumentParser
 
 # Adding arguments
 parser.add_argument('asx', help='Name of the file')
+parser.add_argument('-o', '--ignoreErrors', action='store_true', help="Ignores Program Errors")
+
 args = parser.parse_args()
 
 script_name = args.asx
+if args.ignoreErrors: 
+    ignore_errors: bool = True
+else: 
+    ignore_errors: bool = False
 
+# Error Output Function
+def error_out(error_message: str, ErrorType: str = 'ERROR'): 
+    if not ignore_errors:
+        print(f'[{ErrorType}] | {error_message}')
+        exit()
+    else: 
+        print(f'[{ErrorType}] | {error_message}')
 
 # AMM - Astro Memory Management
 variable_storage = {}                   # Global Scope  |   Variable Names & Values         | Main Storage
@@ -41,7 +49,7 @@ def _get_parse(src_file: str):  # Getting Parsed Code (ASP Module)
             return code
     except FileNotFoundError as FNF: 
         error_out(FNF)
-        exit()
+        
 
 
 class Dev:
@@ -126,7 +134,10 @@ class Interpreter:
                 item_count += 1
             print(']')
         else:
-            print(out[1])
+            try:
+                print(out[1])
+            except TypeError: 
+                pass
 
     def _exec_wait(self, time): # wait statement execution function
         sleep(time)
@@ -155,7 +166,8 @@ class Interpreter:
 
     def call_function(self, statement: dict, function_name: str):
         function_name = statement['name']
-        param_vals = statement['params'] 
+        param_vals = statement['params']
+
         try: 
             self.memory.assign_parameter_mem(
                                          values=param_vals,
@@ -164,8 +176,10 @@ class Interpreter:
                                         )
         except KeyError: 
             error_out(f'Function "{function_name}" not defined', undef_function)
-            quit()
-        self._exec_function(func_name=function_name)
+        try:
+            self._exec_function(func_name=function_name)
+        except KeyError: 
+            pass
 
     def call_statement(self, statement: dict, inside_function: bool, func_name: str): # base statement execution
         parameter_type = statement['params'][0][0]  # Parameter Type Handle ('var', 'str', ...)
@@ -179,7 +193,6 @@ class Interpreter:
                         val = variable_storage[parameter_name]                      # Trying to get global scope variable storage (3. prior)
                     except KeyError:
                         error_out(f'Variable "{parameter_name}" undefined', undef_var)
-                        quit()
             else: 
                 val = statement['params'][0]                                   # Trying to get non-AMM implemented parameter (Last prior)
         else:
@@ -188,11 +201,16 @@ class Interpreter:
                     val = variable_storage[parameter_name]                              # Trying to get variable storage (First prior)
                 except KeyError:
                     error_out(f'Variable "{parameter_name}" undefined', undef_var) 
-                    quit()
             else: 
                 val = statement['params'][0]                                      # Trying to get non-AMM implemented parameter (Last prior)                                         # Trying to get non-AMM implemented parameter (Always prior)
         
-        return val                                                              # Returning, Now, Handled Parameter
+        try:
+            return val                                                              # Returning, Now, Handled Parameter
+        except UnboundLocalError: 
+            pass
+
+    def _exec_delete(self, variable: str): 
+        pass
 
     def call_if(self, statement: dict):     ### TODO Finish If-Statement Checking Function, return True / False
         check_bool = False
@@ -201,7 +219,7 @@ class Interpreter:
     def interpret(self, source, in_function: bool, function_name: str = ''): 
         # main interpreting loop
         for statement in source:
-            # print('Statement: ', statement) ### TODO RE-ENABLE
+            # print('Statement: ', statement)
             ### AMM | Variable Storage ###
             if statement['type'] == 'assignment':
                 self.assign_variable(statement=statement, inside_function=in_function, func_name=function_name) # AMM | Storing Variables
@@ -234,15 +252,22 @@ class Interpreter:
                 elif statement['name'] == 'pause':
                     sec = self.call_statement(statement=statement, inside_function=in_function, func_name=function_name)[1]    # AMM | Param Handling
                     self._exec_wait(time=sec)   # Executing Statement with handled parameter/s
+                ### Delete Statement ###
+                elif statement['name'] == 'delete':
+                    var = self.call_statement(statement=statement, inside_function=in_function, func_name=function_name)[1]
+                    self._exec_delete(variable=var)
+            
             elif statement['type'] == 'if': 
                 self.call_if(statement=statement)
 
 
 mem = Memory()  # Memory Instance Initialization
 Interpreter = Interpreter(
-                            dev=dev,                                                                                # Dev-Tools 
-                            memory=mem,                                                                             # AMM | Memory Handling
-                            src_path=script_name                                                                    # _PATH_
+                            dev=dev,                # Dev Tools 
+                            memory=mem,             # AMM | Memory Handling
+                            src_path=script_name    # _PATH_
                         )
+
+math = Math()
 
 Interpreter.interpret(source=Interpreter.content, in_function=False) # Main Interpreting Method
