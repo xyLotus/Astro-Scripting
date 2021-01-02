@@ -73,6 +73,10 @@ class String(Variable):
             raise TypeError('the passed object is not a string')
         self._data = data
 
+    def __len__(self):
+        """ Returns the length of the string. """
+        return len(self.get())
+
 
 class Num(Variable):
     """ A number: int / float """
@@ -81,7 +85,7 @@ class Num(Variable):
     def new(cls, name: str, data: Union[int, float]):
         """ Creates a new Num object and returns it. """
         if not isinstance(data, (int, float)):
-            raise TypeError('this passed object cannot be interpreted'
+            raise TypeError('this passed object cannot be interpreted '
                             'as a number value')
         return Num(name, data)
 
