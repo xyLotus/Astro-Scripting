@@ -36,9 +36,7 @@
     have fun coding!
 
     @author   bellrise
-    @version  0.1
-
-    @note     String.regex is not implemented yet.
+    @version  0.4
 
 --/
 
@@ -59,7 +57,7 @@
  --/
 #split(string, sub):
     @mixin __String#split
-    return string
+    return __array
 
 /-- Returns an array of matches in the specified string.
  - You can later remove or read the matches comparing it
@@ -68,12 +66,10 @@
  - value if it gets added or just False). This is based
  - on the python re module which uses the basic UNIX regex
  - format.  
- -
- - [ NOT IMPLEMENTED ] 
  --/
 #regex(string, re):
-    say "String.regex is not implemented yet"
-    exit 1
+    @mixin __String#regex
+    return __array
 
 /-- Converts the whole string to a lower case string.
  - Omits any non-alphabetical characters. 
@@ -94,7 +90,7 @@
  --/
 #length(string):
     @mixin __String#length
-    return string
+    return _len
 
 /-- Returns the index of the first letter of the specified
  - substring in the string. This is of course done easily
@@ -117,7 +113,7 @@
  --/
 #find(string, sub):
     @mixin __String#find
-    return string
+    return __i
 
 /-- Replaces all the __a substrings with __b substrings as
  - specified in the arguments and returns a copy of the new
@@ -144,49 +140,42 @@
  --/
 #to_num(string):
     @mixin __String#to_num
-    return string
+    return __num
 
 /-- Converts any object to a boolean type. This function is pretty
  - big in comparison to the to_num function because a True or False
  - value can come in many shapes and forms, implementing other styles
- - of true/false formats and types. This is a handy list of True
- - and False string values currently handled (all values are represented
- - as string, while square brackets indicate a math expression that
- - is passed via a number type, not a string.):
+ - of true/false formats and types. The default return value is True, returns
+ - False otherwise. This is a handy list of all False values currently handled.
  -
- -  True    | False                 Other false values:
- -  --------|----------             ------------------
- -  True    | False                 Empty String  ""
- -  true    | false                 Empty Array   []
- -  [ > 0 ] | [ <= 0 ]              Boolean False 
- -  yes     | no
- -  Yes     | No
- -  y       | n
- -  Y       | N
- -          | null
- -          | nil
+ -  ""                   "no"
+ -  []                   "No"
+ -  False                "n"
+ -  "False"              "N"
+ -  "false"              "null"
+ -  <= 0                 "nil"
  --/
 #to_bool(value):
     @mixin __String#to_bool
-    return string
+    return __bool
 
 /-- Returns True of the whole string can be turned into a number
  - type, that is all characters are numeric characters. 
  --/
 #is_num(string: str):
     @mixin __String#is_num
-    return string
+    return __bool
 
 /-- Returns True if the passed string is all lower case. This only
- - counts ascii characters, exdluding any numbers or special characters.
+ - counts ascii characters, excluding any numbers or special characters.
  --/
 #is_lower(string: str):
     @mixin __String#is_lower
-    return string
+    return __bool
 
 /-- Returns True if the passed string is all upper case. This only
- - counts ascii characters, exdluding any numbers or special characters.
+ - counts ascii characters, excluding any numbers or special characters.
  --/
 #is_upper(string: str):
     @mixin __String#is_upper
-    return string
+    return __bool
