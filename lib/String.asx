@@ -1,0 +1,192 @@
+/-- 
+    This is the String standard library header
+    for Astro. It contains many string-manipulation
+    and testing methods along with some formatting
+    stuff. This, as most of the stdlib is implmenented
+    in Python using astropy as the framework.
+
+    This functionality may look better when operating
+    on a string object, but Astro lacks such functionality,
+    so things are done by passing the string as the first
+    argument to these methods are assigning the value back
+    to the string. This may be quite memory-hungty later
+    in bigger projects, but mind you this does run on Python
+    (this implementation atleast) so it's not like this
+    would be lightning fast anyways. If models or objects
+    get implemented into astro, this will be moved into the
+    _String module while the object-oriented version will
+    be assigned to the String name, as the main module.
+    
+    As we all know string operations are one of the most
+    crucial parts of programming, so this library counts
+    as one of the "core libs" of Astro, along with things 
+    like System, Array & File. These libraries are fixed
+    and updated first, before anything else so they can
+    be relied on by all libraries that are actually written
+    in raw Astro code. If anything goes wrong here, you
+    can create an issue at [github.com/xyLotus/astro/issues].
+
+    Most of these functions throw live errors to the interpreter
+    if something goes wrong, stopping the program and not 
+    letting the user handle errors as of now. If catching 
+    error will not be possible before the 1.0 release of 
+    Astro, I will change the methods to return False or null
+    (if that ever gets added) in case of an error, without
+    killing the program. For now I can only offer this, so
+    have fun coding!
+
+    @author   bellrise
+    @version  0.1
+
+    @note     String.regex is not implemented yet.
+
+--/
+
+
+/-- Returns the substring of the passed string from
+ - a to b inclusive.
+ --/
+#substr(string, __a, __b):
+    @mixin __String#substr
+    return string
+
+/-- Splits the string at the found locations, returns
+ - a copy of the string without any of the specified
+ - substrings in them as they get removed from the whole
+ - string. This may be useful for splitting emails for
+ - example, as String.split(email, "@") will return a 2
+ - element array with the username and the profile. 
+ --/
+#split(string, sub):
+    @mixin __String#split
+    return string
+
+/-- Returns an array of matches in the specified string.
+ - You can later remove or read the matches comparing it
+ - to the original string. When no matches are found, it
+ - returns an empty list. (This may be changed to a null
+ - value if it gets added or just False). This is based
+ - on the python re module which uses the basic UNIX regex
+ - format.  
+ -
+ - [ NOT IMPLEMENTED ] 
+ --/
+#regex(string, re):
+    say "String.regex is not implemented yet"
+    exit 1
+
+/-- Converts the whole string to a lower case string.
+ - Omits any non-alphabetical characters. 
+ --/
+#lower(string):
+    @mixin __String#lower
+    return string
+
+/-- Converts the whole string to a upper case string.
+ - Omits any non-alphabetical characters.
+ --/
+#upper(string):
+    @mixin __String#upper
+    return string
+
+/-- Returns the total length of the string. Nothing
+ - else. Simple as that.
+ --/
+#length(string):
+    @mixin __String#length
+    return string
+
+/-- Returns the index of the first letter of the specified
+ - substring in the string. This is of course done easily
+ - in Python, but in any other implementation of Astro this
+ - would be done by checking each substring of the string that
+ - is the same length of the substring, and if the chars would
+ - match the loop would return the current int index. Also, if
+ - this does not find any matching substring in the string it
+ - returns -1. Help: if you want to not care about the case of
+ - the string, use String.lower(str) to change all your strings
+ - and substrings to lower case so any case works. 
+ - 
+ - Currently this can be used in the "if sub in str" syntax 
+ - while that might be added(?) or if it won't, this is a good
+ - and long-time solution to this problem. A short example:
+ -
+ - if String.find("abc", "a") != -1:
+ -     -- Execute code if 'a' is found in 'abc' 
+ - 
+ --/
+#find(string, sub):
+    @mixin __String#find
+    return string
+
+/-- Replaces all the __a substrings with __b substrings as
+ - specified in the arguments and returns a copy of the new
+ - string. Just so you know, even on the Python level moving
+ - strings around is quite an expensive operation.
+ --/
+#replace(string, __a, __b):
+    @mixin __String#replace
+    return string
+
+/-- Removes any whitespace characters on both ends of the strings,
+ - returning only the core part. Note: this does not remove any
+ - whitespace from inside the strings, only the outside. 
+ --/
+#strip(string):
+    @mixin __String#strip
+    return string
+
+/-- Casts the string to an astro number type. If the string contains
+ - any invalid characters, it throws a TypeError. Maybe this will
+ - be possible to catch, I'm not sure. If catching errors will not
+ - be implemented before 1.0, i'll change this to return False rather
+ - then stop the program throwing an error. 
+ --/
+#to_num(string):
+    @mixin __String#to_num
+    return string
+
+/-- Converts any object to a boolean type. This function is pretty
+ - big in comparison to the to_num function because a True or False
+ - value can come in many shapes and forms, implementing other styles
+ - of true/false formats and types. This is a handy list of True
+ - and False string values currently handled (all values are represented
+ - as string, while square brackets indicate a math expression that
+ - is passed via a number type, not a string.):
+ -
+ -  True    | False                 Other false values:
+ -  --------|----------             ------------------
+ -  True    | False                 Empty String  ""
+ -  true    | false                 Empty Array   []
+ -  [ > 0 ] | [ <= 0 ]              Boolean False 
+ -  yes     | no
+ -  Yes     | No
+ -  y       | n
+ -  Y       | N
+ -          | null
+ -          | nil
+ --/
+#to_bool(value):
+    @mixin __String#to_bool
+    return string
+
+/-- Returns True of the whole string can be turned into a number
+ - type, that is all characters are numeric characters. 
+ --/
+#is_num(string: str):
+    @mixin __String#is_num
+    return string
+
+/-- Returns True if the passed string is all lower case. This only
+ - counts ascii characters, exdluding any numbers or special characters.
+ --/
+#is_lower(string: str):
+    @mixin __String#is_lower
+    return string
+
+/-- Returns True if the passed string is all upper case. This only
+ - counts ascii characters, exdluding any numbers or special characters.
+ --/
+#is_upper(string: str):
+    @mixin __String#is_upper
+    return string
