@@ -9,7 +9,7 @@ the current data in the scope.
 import re
 
 __author__  = 'bellrise'
-__version__ = '0.2.8'
+__version__ = '0.2.9'
 
 # Interface imports
 from .objects import Scope, Mixin
@@ -26,3 +26,22 @@ def render(func, lib: str, name: str):
             raise RuntimeError('Invalid mixin name')
 
     return Mixin(func, lib, name)
+
+
+def void(*r):
+    # ! Pulled from llx
+    """ This function is used for voiding variables (basically
+    doing nothing with them. Any amount of variables can be passed
+    to this function. Returns a lambda function returning None.
+    :param r: Anything. """
+    str(r)
+    return lambda: None
+
+
+def notImplemented(func):
+    """ Not implemented decorator for astro functions. Raises
+    NotImplemented if you try to use them. """
+    def wrapper(*a, **kw):
+        void(a, kw)
+        raise NotImplementedError(f'{func.__name__} is not implemented yet')
+    return wrapper
