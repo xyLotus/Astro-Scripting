@@ -710,7 +710,7 @@ class _Parser:
             "line": 0,
             "type": self.OPT_HEADER_TITLE,
             "format": FORMAT,
-            "info": f"Compiled by asp3 version {__version__}, {time_}"
+            "info": f"Parsed by asp3 version {__version__}, {time_}"
         }
         self.code.insert(0, header)
 
