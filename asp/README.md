@@ -8,7 +8,7 @@ function. This has no dependencies apart from the Python standard
 library.
 
 ### asp3
-  The third asx code format (`FORMAT 3`) will probably be supported
+  The third asx code format (`pax3`) will probably be supported
   for quite some time, as it is the main parser ASX is based on, as of
   December, 2020. The previous version called just asp, has been deprecated
   as it was very buggy and had a lot problems and missing functionality.
@@ -35,7 +35,7 @@ library.
   function, taking in the lines of the script as a list of strings, and
   returning a JSON-serializable code object for the interpreter to read
   and execute. Intenally, the `parse()` function creates an instance of the
-  `_Parser` class to call its `get()` method which returns the generated code
+  `_Parser` class to call its `render()` method which returns the generated code
   object (which happens already in the `__init__` function. The constructor
   takes in the list of strings, cleaning them up, removing comments and
   calculating tabsizes. Note: a single tab can be any amount of spaces,
@@ -62,3 +62,15 @@ library.
   astro code compatible format from the parser-only internal format. The
   final result is the JSON-serializable code object represented as a list
   of statements (list of dicts).
+   
+# Parser options
+You can now specify some options for the parser which you pass as keyword
+arguments to the parse() method. Example:
+```python
+code = asp3.parse(lines, header_title='header')
+```
+
+Option          | Type | What is does
+----------------|------|----------------------------------
+`header_title`  | str  | Changes the header 'type' field.
+`assignment_kw` | str  | The keyword used for the 'data' field in the assignment type.
