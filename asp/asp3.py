@@ -5,7 +5,7 @@ a standalone program. When using it as a module, just use the parse
 function. This has no dependencies apart from the Python standard
 library.
 
-* asp3: The third asx code format (FORMAT 3) will probably be supported
+* asp3: The third asx code format (pax3) will probably be supported
   for quite some time, as it is the main parser ASX is based on, as of
   December, 2020. The previous version called just asp, has been deprecated
   as it was very buggy and had a lot problems and missing functionality.
@@ -30,7 +30,7 @@ library.
   function, taking in the lines of the script as a list of strings, and
   returning a JSON-serializable code object for the interpreter to read
   and execute. Intenally, the parse() function creates an instance of the
-  _Parser class to call its get() method which returns the generated code
+  _Parser class to call its render() method which returns the generated code
   object (which happens already in the __init__ function. The constructor
   takes in the list of strings, cleaning them up, removing comments and
   calculating tabsizes. Note: a single tab can be any amount of spaces,
@@ -60,7 +60,7 @@ import datetime
 import re
 
 __author__  = 'bellrise'
-__version__ = '3.5.0'
+__version__ = '3.5.1'
 
 # This is the format version of the code object generated
 # by the parser, each new format is most probably incompatible
@@ -386,7 +386,11 @@ class _Parser:
     # ------------------------------------------
 
     def parse_math(self, line, num):
-        """ Parses the mathematical thingy. """
+        """ Parses the mathematical thingy. As of fix 3.5.1, parse_math
+        can now parse multiple numbers at once, which it could not do
+        before because of it replacing the incorrect finds in the new
+        line, not the original one. """
+
         keys = {
             '+': 'ADD',
             '-': 'SUB',
@@ -394,22 +398,30 @@ class _Parser:
             '/': 'DIV',
             '<': 'CSM',
             '>': 'CLG',
+            '(': 'BRO',
+            ')': 'BRC',
             '!=': 'NOT',
             '==': 'CEQ',
             '<=': 'CSE',
             '>=': 'CLE'
         }
 
+        origin = line.replace(' ', '')
         line = line.replace(' ', '')
-        finds = re.finditer('[^A-z\d]+', line)
+        finds = re.finditer('(!=|==|>=|<=|\+|-|\*|/|<|>|\(|\))', origin)
         for i in finds:
-            x = line[i.start():i.end()]
+            x = origin[i.start():i.end()]
             try:
                 line = line.replace(x, '¶' + keys[x] + '¶')
             except KeyError:
                 raise SyntaxError(f'Invalid equation @ line {num}')
 
-        line = line.split('¶')
+        temp = line.split('¶')
+        # Clearing empty stuff
+        line = []
+        for i in temp:
+            if i: line.append(i)
+
         for index, i in enumerate(line):
             try:
                 line[index] = float(i)
