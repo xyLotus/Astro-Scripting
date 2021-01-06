@@ -70,3 +70,26 @@ Change Log: (See Interpreter)
     - "--ignoreErrors" argument added
     -  ^ outputs errors but doesn't exit program
     - Note: Bugs could occur, it's easy to forget to catch an error
+   
+* 0.1.1
+    -- Mixin Loading Added --
+    - You can now load mixins | AMM 
+
+* 0.1.2
+    -- Statement Name Chaning --
+    - Wait -> Pause
+    - Say -> Out
+
+* 0.1.3
+    -- Import Interpreting --
+    - Import AMM Implementation | AMM
+    - Function saving (function_storage, function_variable_storage)
+    - etc. (See interpret method @ Interpreter cls)
+
+* 0.1.4
+    -- Array Element Accessing --
+    - You can now access elements in arrays by using ´array_name[index]´
+
+* 0.1.5
+    -- Call Statement Method Changes --
+    - Different return type when statement parameter type is 'elm'
