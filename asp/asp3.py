@@ -55,16 +55,19 @@ library.
   of statements (list of dicts).
 
 """
+from asp import apt
+import datetime
 import re
 
 __author__  = 'bellrise'
-__version__ = '3.4.7'
+__version__ = '3.5.0'
 
 # This is the format version of the code object generated
 # by the parser, each new format is most probably incompatible
 # with the older one, as names get changed and data shifted
-# around or added into other containers.
-FORMAT = 3
+# around or added into other containers. The current version
+# is pax3, which stands for Parsed Astro Executable 3.
+FORMAT = 'pax3'
 
 # Blocks is a list of statement types which represent code
 # blocks, that are executed depending on the conditions.
@@ -75,10 +78,26 @@ BLOCKS = ['if', 'else', 'elif', 'try', 'while', 'function']
 class _Parser:
     # Internal class, do not use!
 
-    omit = []
+    OPT_HEADER_TITLE  = '_HEADER'   # title of the header
+    OPT_ASSIGNMENT_KW = 'data'      # the keyword used for the data field
 
-    def __init__(self, lines: list):
+    def __init__(self, lines: list, **kw):
         """ Entrypoint for the parser. """
+
+        # Header title
+        if kw.get('header_title'):
+            if not isinstance(kw['header_title'], str):
+                raise apt.ParserError('opt: invalid header_title type')
+            self.OPT_HEADER_TITLE = kw['header_title']
+
+        # Alternative assignment keyword option
+        if kw.get('assignment_kw'):
+            if not isinstance(kw['assignment_kw'], str):
+                raise apt.ParserError('opt: invalid assignment_kw type')
+            self.OPT_ASSIGNMENT_KW = kw['assignment_kw']
+
+
+        # Execution
         self.code = [s.strip('\n') for s in lines]
         self.clean()
         self.tabsize = self.init_whitespace()
@@ -177,7 +196,6 @@ class _Parser:
 
             # Inside of function
             if in_func and (indent > func_indent) and text:
-                self.omit.append(line[0])
                 func.append(line)
                 continue
 
@@ -664,22 +682,33 @@ class _Parser:
 
         return [
             index, indent,
-            {'type': 'assignment', 'var': var, 'data': data}
+            {'type': 'assignment', 'var': var, self.OPT_ASSIGNMENT_KW: data}
         ]
 
     # ------------------------------------------
     # Final
     # ------------------------------------------
 
-    def get(self):
-        """ Returns the code object from the class. """
+    def render(self):
+        """ Returns the code object from the class. Also places
+        the header as the first element. """
+
+        time_ = datetime.datetime.utcnow().strftime('%d-%M-%Y %H:%M:%S')
+        header = {
+            "line": 0,
+            "type": self.OPT_HEADER_TITLE,
+            "format": FORMAT,
+            "info": f"Compiled by asp3 version {__version__}, {time_}"
+        }
+        self.code.insert(0, header)
+
         return self.code
 
 
-def parse(lines: list):
+def parse(lines: list, **kw):
     """ Parses the code and returns a JSON serializable data
     object which works as the code.
     :param lines: The lines of code, prefferably coming from
      f.readlines() """
 
-    return _Parser(lines).get()
+    return _Parser(lines, **kw).render()
