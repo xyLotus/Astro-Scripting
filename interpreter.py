@@ -1,19 +1,24 @@
 ''' ASX Interpreting / Execution '''
 
 __author__ = 'Lotus'
-__version__ = '0.1.0'
+__version__ = '0.1.5'
 
 try:
+    # Core Imports
     import asp.asp3 as asp          # Parser import
     from time import sleep          # Pausing the program
     import sys                      # PATH
     import argparse                 # argument parsing
     from astropy.errors import *    # Error Handling
+    import os
 except ImportError as ImportErr:
     error_out(f'Critical Import Error -> {ImportErr}')
 
 
+# --------------------------------------- 
 # Argument parsing
+# ---------------------------------------
+
 parser = argparse.ArgumentParser() # Initializing the ArgumentParser
 
 # Adding arguments
@@ -27,6 +32,43 @@ if args.ignoreErrors:
     ignore_errors: bool = True
 else: 
     ignore_errors: bool = False
+
+
+# --------------------------------------- 
+# Mixin importing & building
+# ---------------------------------------
+
+def load_mixins():
+    # This is put into a function to keep variables
+    # local so they don't trash the global scope. 
+    
+    # Loading the mixins
+    files = os.listdir('mixins')
+    m_modules = []
+    for mixin in files:
+        if mixin.startswith('__'):
+            continue
+        m_ = __import__(f'mixins.{mixin[:-3]}', globals(), locals(), [mixin[:-3]])
+        m_modules.append(m_)
+
+    # Building the mixins
+    mixins = {}
+    for m in m_modules:
+        try:
+            funcs = m.__build__()
+            if not isinstance(funcs, list):
+                raise ReferenceError('__build__ function must return a list of Mixin objects')
+        except AttributeError:
+            # __build__ function not found
+            raise ReferenceError('__build__ function was not found in mixin')
+        
+        for func in funcs:
+            mixins[func.name] = func
+        
+    return mixins
+
+mixins = load_mixins()
+mixin_names = [str(y) for x, y in enumerate(mixins)]
 
 # Error Output Function
 def error_out(error_message: str, ErrorType: str = 'ERROR'): 
@@ -45,7 +87,7 @@ function_parameter_storage = {}         # Global-Local  |   Parameter Names     
 def _get_parse(src_file: str):  # Getting Parsed Code (ASP Module)
     try: 
         with open(src_file, 'r') as file:
-            code = asp.parse(file)
+            code = asp.parse(file, assignment_kw='params')
             return code
     except FileNotFoundError as FNF: 
         error_out(FNF)
@@ -114,8 +156,8 @@ class Interpreter:
     def _exec_function(self, func_name: str):   # executes function | used @ interpret method
             self.interpret(source=function_storage[func_name], in_function=True, function_name=func_name)
 
-    def _exec_say(self, out, multi: bool):   # say statement execution function
-        if multi:
+    def call_out(self, out, type_str: str, statement: dict, variable_name: str):   # say statement execution function
+        if type_str == 'array':
             out = out[1]
             print('[', end='')
             item_count = 0
@@ -133,10 +175,15 @@ class Interpreter:
                     
                 item_count += 1
             print(']')
+        elif type_str == 'elm':
+            try:
+                print(out[1][statement['params'][0][1]['element']][1])
+            except IndexError:
+                error_out(f'Index given in variable "{variable_name}" is out of range', index_error)
         else:
             try:
                 print(out[1])
-            except TypeError: 
+            except TypeError:
                 pass
 
     def _exec_wait(self, time): # wait statement execution function
@@ -145,7 +192,7 @@ class Interpreter:
     def assign_variable(self, statement, inside_function: bool, func_name: str): # Variable AMM Snippet used @ Interpret Method
         if inside_function:
             variable_name = statement["var"]
-            variable_value = statement['data']
+            variable_value = statement['params']
             self.memory.store_func_variable(
                                             function_name=func_name,
                                             variable=variable_name,
@@ -153,7 +200,7 @@ class Interpreter:
                                            )
         else:
             variable_name = statement['var']
-            variable_value = statement['data']
+            variable_value = statement['params']
             self.memory.store_variable(variable=variable_name, value=variable_value)
 
     def assign_function(self, statement: dict, func_name: str):
@@ -183,9 +230,13 @@ class Interpreter:
 
     def call_statement(self, statement: dict, inside_function: bool, func_name: str): # base statement execution
         parameter_type = statement['params'][0][0]  # Parameter Type Handle ('var', 'str', ...)
-        parameter_name = statement['params'][0][1]  # Parameter Name Handle                                                  #-----------------VARIABLE==TRUE------------------
+        parameter_name = statement['params'][0][1]  # Parameter Name Handle                          
+        
+        if parameter_type == 'elm':
+            parameter_name = statement['params'][0][1]['var']
+        
         if inside_function:
-            if parameter_type == 'var':                                                          #-----------------INSIDE-FUNC-----------------
+            if parameter_type == 'var' or parameter_type == 'elm':                                                 #-----------------INSIDE-FUNC-----------------
                 try:                                                                    #-----------------INSIDE-FUNC----------------- 
                     val = function_variable_storage[func_name][parameter_name]      # Trying to get local scope func storage (2. prior)
                 except KeyError:
@@ -196,24 +247,49 @@ class Interpreter:
             else: 
                 val = statement['params'][0]                                   # Trying to get non-AMM implemented parameter (Last prior)
         else:
-            if parameter_type == 'var':                                                                     #----------------OUTSIDE-FUNC----------------
+            if parameter_type == 'var':                                                #----------------OUTSIDE-FUNC----------------
                 try:                                                                    #----------------OUTSIDE-FUNC----------------
                     val = variable_storage[parameter_name]                              # Trying to get variable storage (First prior)
                 except KeyError:
                     error_out(f'Variable "{parameter_name}" undefined', undef_var) 
+            elif parameter_type == 'elm':
+                try:
+                    val = variable_storage[parameter_name]
+                except KeyError:
+                    error_out(f'Variable "{parameter_name} undefined', undef_var)
             else: 
-                val = statement['params'][0]                                      # Trying to get non-AMM implemented parameter (Last prior)                                         # Trying to get non-AMM implemented parameter (Always prior)
+                val = statement['params'][0]                                      # Trying to get non-AMM implemented parameter (Last prior)                                       
         
         try:
-            return val                                                              # Returning, Now, Handled Parameter
+            if parameter_type == 'elm': 
+                return ['elm', val[1], parameter_name]                  # Returning, Now, Handled Parameter
+            else:
+                return val                                                                
         except UnboundLocalError: 
             pass
+
+    def check_import(self, statement: dict):
+        import_name = statement['name']
+        if f'{import_name}.asx' in os.listdir('lib'): 
+            return 'STD' # Standard Lib 
+        elif f'{import_name}.asx' in os.getcwd():
+            return 'USER' # Custom Lib
+        else:
+            return 'INVALID' # Lib Not Found
+
+    def call_import(self, lib_name: str, std_check: str):
+        # Calling the import
+        if std_check == 'STD':
+            with open(f'lib\\{lib_name}.asx', 'r') as f:
+                lib_content = _get_parse(f'lib\\{lib_name}.asx')
+                print(lib_content)
+            self.interpret(source=lib_content, in_function=False)
 
     def _exec_delete(self, variable: str): 
         pass
 
     def call_if(self, statement: dict):     ### TODO Finish If-Statement Checking Function, return True / False
-        check_bool = False
+        pass
 
     # Main Method - Uses a lot of function from above this line ^^^^
     def interpret(self, source, in_function: bool, function_name: str = ''): 
@@ -235,19 +311,13 @@ class Interpreter:
             ### Statement Execution ###
             elif statement['type'] == 'statement':
                 ### Say Statement ###
-                if statement['name'] == 'say':
+                if statement['name'] == 'out' or statement['name'] == 'say':
                     out = self.call_statement(statement=statement, inside_function=in_function, func_name=function_name)    # AMM | Param Handling
-                    
+                    type_str = out[0]
                     try:
-                        array_check = out[0]
-                        if array_check == 'arr':
-                            mult_bool = True
-                        else: 
-                            mult_bool = False
-                    except Exception:
-                        mult_bool = False
-
-                    self._exec_say(out=out, multi=mult_bool)     # Executing Statement with handled parameter/s
+                        self.call_out(out=out, type_str=type_str, statement=statement, variable_name=out[2])     # Executing Statement with handled parameter/s
+                    except IndexError: 
+                        self.call_out(out=out, type_str=type_str, statement=statement, variable_name='')     # Executing Statement with handled parameter/s
                 ### Wait Statement ###
                 elif statement['name'] == 'pause':
                     sec = self.call_statement(statement=statement, inside_function=in_function, func_name=function_name)[1]    # AMM | Param Handling
@@ -256,9 +326,12 @@ class Interpreter:
                 elif statement['name'] == 'delete':
                     var = self.call_statement(statement=statement, inside_function=in_function, func_name=function_name)[1]
                     self._exec_delete(variable=var)
-            
-            elif statement['type'] == 'if': 
-                self.call_if(statement=statement)
+            elif statement['type'] == 'import':
+                in_mixin = self.check_import(statement=statement) # Checking if imported libary is in STD or User lib
+                self.call_import(std_check=in_mixin, lib_name=statement['name'])
+            elif statement['type'] == 'mixin': 
+                mixin_name = statement['name']
+                function_variable_storage[function_name] = mixins[mixin_name](function_variable_storage[function_name])
 
 
 mem = Memory()  # Memory Instance Initialization
@@ -271,3 +344,5 @@ Interpreter = Interpreter(
 math = Math()
 
 Interpreter.interpret(source=Interpreter.content, in_function=False) # Main Interpreting Method
+# print('\n\n\nVariable Storage: ', variable_storage)
+ 
