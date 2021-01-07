@@ -14,26 +14,26 @@ library.
   the __version__ of the parser is defined with 3 numbers: the first one
   represents the format, the second one shows the major version, and the
   third the minor version. If two implementations have the same format
-  & major version, it is highly possible there should be no compatibilty
+  & major version, it is highly possible there should be no compatibility
   issues.
 
 * Versions: This version will be supported as long as the interpreter will
   be using it, however parallel development of a new format can happen.
   This style of work has been chosen because creating a new, stable parser
   takes a lot of work and time, so in order to shorten the project development
-  downtime to a minimum, an older version will be supported & bugfixed
+  downtime to a minimum, an older version will be supported & bug-fixed
   while a fresh and new version is being worked on. Every new version of
   asp will be thoroughly tested before deployment, even if the beta is
-  alredy commited to the Github repository.
+  already committed to the Github repository.
 
 * How it works: The main function of this whole parser would be the parse()
   function, taking in the lines of the script as a list of strings, and
   returning a JSON-serializable code object for the interpreter to read
-  and execute. Intenally, the parse() function creates an instance of the
+  and execute. Internally, the parse() function creates an instance of the
   _Parser class to call its render() method which returns the generated code
   object (which happens already in the __init__ function. The constructor
   takes in the list of strings, cleaning them up, removing comments and
-  calculating tabsizes. Note: a single tab can be any amount of spaces,
+  calculating tab sizes. Note: a single tab can be any amount of spaces,
   but then it has to be kept the same for every single indent, or the
   parser will raise an IndentError which the interpreter can catch and
   read.
@@ -55,12 +55,12 @@ library.
   of statements (list of dicts).
 
 """
-from asp import apt
+from . import apt
 import datetime
 import re
 
-__author__  = 'bellrise'
-__version__ = '3.5.1'
+__author__ = 'bellrise'
+__version__ = '3.5.3'
 
 # This is the format version of the code object generated
 # by the parser, each new format is most probably incompatible
@@ -74,15 +74,14 @@ FORMAT = 'pax3'
 BLOCKS = ['if', 'else', 'elif', 'try', 'while', 'function']
 
 
-
 class _Parser:
     # Internal class, do not use!
 
-    OPT_HEADER_TITLE  = '_HEADER'   # title of the header
-    OPT_ASSIGNMENT_KW = 'data'      # the keyword used for the data field
+    OPT_HEADER_TITLE = '_HEADER'  # title of the header
+    OPT_ASSIGNMENT_KW = 'data'  # the keyword used for the data field
 
     def __init__(self, lines: list, **kw):
-        """ Entrypoint for the parser. """
+        """ Entry point for the parser. """
 
         # Header title
         if kw.get('header_title'):
@@ -96,7 +95,6 @@ class _Parser:
                 raise apt.ParserError('opt: invalid assignment_kw type')
             self.OPT_ASSIGNMENT_KW = kw['assignment_kw']
 
-
         # Execution
         self.code = [s.strip('\n') for s in lines]
         self.clean()
@@ -104,7 +102,8 @@ class _Parser:
         self.count_whitespace()
         self.code = self.type(self.code)
 
-    def hash_strings(self, line, num):
+    @staticmethod
+    def hash_strings(line, num):
         """ Replaces all strings with hashes for commenting
         purposes. """
         matches = re.finditer('"[^"]*"', line)
@@ -151,10 +150,10 @@ class _Parser:
                 self.code[index] = ''.join(chars)
 
     def init_whitespace(self):
-        """ Check the first occuring whitespace and return
+        """ Check the first occurring whitespace and return
         the basic whitespace amount. """
         for line in self.code:
-            match = re.match(r'^ *', line)
+            match = re.match(r'^ *', str(line))
             if match.end() != 0:
                 return len(line[0:match.end()])
         return 4
@@ -165,12 +164,12 @@ class _Parser:
         for index, line in enumerate(self.code):
             match = re.match(r'^ *', line)
             if match.end() == 0:
-                self.code[index] = [index+1, 0, line.strip()]
+                self.code[index] = [index + 1, 0, line.strip()]
             # Size checking
             if match.end() % self.tabsize != 0:
                 raise IndentationError(f'Invalid tab size @ line {index}')
 
-            self.code[index] = [index+1, int(match.end() / self.tabsize), line.strip()]
+            self.code[index] = [index + 1, int(match.end() / self.tabsize), line.strip()]
 
     def type(self, lines):
         """ This is the main function for setting the types of the
@@ -214,6 +213,7 @@ class _Parser:
                 # Module import
                 r'import .*': self.parse_import,
 
+                # Delete keyword
                 r'delete .*': self.parse_delete,
 
                 # If block header
@@ -221,6 +221,9 @@ class _Parser:
 
                 # While block header
                 r'^while .+:.*': self.parse_while,
+
+                # For loop header
+                r'^for .+:.*': self.parse_for,
 
                 # Elif block header
                 r'^elif .*:.*': self.parse_elif,
@@ -238,7 +241,7 @@ class _Parser:
                 r'^[_A-z][_A-z0-9]* *= *.*': self.parse_assignment,
 
                 # Regular base statement
-                r'^[_A-z][_A-z0-9]* .*': self.parse_statement,
+                r'^[_A-z][_A-z0-9]*.*': self.parse_statement,
 
                 # Function call statement
                 r'^[_A-z][_A-z0-9]*\(.*\)$': self.parse_call,
@@ -258,13 +261,14 @@ class _Parser:
             if unparsed and line[2]:
                 raise SyntaxError(f'Invalid syntax @ {line[0]}')
 
-
         # I have to add a phantom line or the whole indent sorter
         # will crash and burn and die and stop working, and this
         # is a lot easier then having to write a pusher which would
         # take another 30 lines. Trust me, I know what im doing.
-        if lines: index = lines[-1][0]+1
-        else: index = 0
+        if lines:
+            index = lines[-1][0] + 1
+        else:
+            index = 0
         lines.append([index, 0, ''])
 
         # Recursive sorting to reach every level of statements,
@@ -275,7 +279,8 @@ class _Parser:
 
         return lines
 
-    def format(self, code):
+    @staticmethod
+    def format(code):
         """ Converts the parser format to a format that the interpreter
         understands. """
         b = {'line': code[0]}
@@ -309,8 +314,9 @@ class _Parser:
 
         return master
 
-    def sort_code_blocks(self, lines):
-        """ Sorts the code blocks into seperate blocks, depending
+    @staticmethod
+    def sort_code_blocks(lines):
+        """ Sorts the code blocks into separate blocks, depending
         on their indentation level. """
         new = lines.copy()
 
@@ -377,7 +383,8 @@ class _Parser:
 
         another_cleared = []
         for line in cleared:
-            if line[2]: another_cleared.append(line)
+            if line[2]:
+                another_cleared.append(line)
 
         return another_cleared
 
@@ -385,7 +392,8 @@ class _Parser:
     # Tools
     # ------------------------------------------
 
-    def parse_math(self, line, num):
+    @staticmethod
+    def parse_math(line, num):
         """ Parses the mathematical thingy. As of fix 3.5.1, parse_math
         can now parse multiple numbers at once, which it could not do
         before because of it replacing the incorrect finds in the new
@@ -420,19 +428,17 @@ class _Parser:
         # Clearing empty stuff
         line = []
         for i in temp:
-            if i: line.append(i)
-
+            if i:
+                line.append(i)
         for index, i in enumerate(line):
             try:
                 line[index] = float(i)
             except ValueError:
                 pass
-
         if len(line) <= 1:
             raise SyntaxError(f'Invalid equation @ line {num}')
 
         return line
-
 
     def parse_args(self, line, num):
         """ Parses the text and returns a data collected argument
@@ -451,14 +457,15 @@ class _Parser:
 
         splits = []
         for i, c in enumerate(self.hash_strings(line, num)):
-            if c == ',' and not omits: splits.append(i)
+            if c == ',' and not omits:
+                splits.append(i)
 
         if splits:
             data = []
             cursor = 0
             for i in splits:
                 data.append(self.variable(line[cursor:i], num))
-                cursor = i+1
+                cursor = i + 1
             data.append(self.variable(line[cursor:], num))
 
             for i, s in enumerate(data):
@@ -474,6 +481,7 @@ class _Parser:
 
     def parse_array(self, line, num):
         """ Parses the array """
+
         elements = self.parse_args(line[1:-1], num)
         return 'array', elements
 
@@ -575,17 +583,29 @@ class _Parser:
         """ Parses an elif statement. """
         return self.parse_if(line, kw='elif')
 
-    def parse_else(self, line):
+    @staticmethod
+    def parse_else(line):
         """ Just returns a structured else. """
         return [line[0], line[1], {'type': 'else'}]
 
-    def parse_try(self, line):
+    @staticmethod
+    def parse_try(line):
         """ Just returns a structures else. """
         return [line[0], line[1], {'type': 'try'}]
 
     def parse_while(self, line):
-        """ Parses an while statemnt. """
+        """ Parses an while statement. """
         return self.parse_if(line, kw='while')
+
+    @apt.notimplemented
+    def parse_for(self, line):
+        """ This parses the for statement. This cannot be implemented
+        yet because the lead dev has no idea how for loops should look. """
+
+        return [
+            line[0], line[1],
+            {'type': 'for', ...: ...}
+        ]
 
     def parse_call(self, line: tuple):
         """ Parses a function call. """
@@ -601,7 +621,8 @@ class _Parser:
             {'type': 'call', 'name': name, 'params': params}
         ]
 
-    def parse_mixin(self, line: tuple):
+    @staticmethod
+    def parse_mixin(line: tuple):
         """ Parses a mixin statement """
         index = line[0]
         indent = line[1]
@@ -612,7 +633,8 @@ class _Parser:
             {'type': 'mixin', 'value': text.split(' ', maxsplit=1)[1]}
         ]
 
-    def parse_header(self, line: tuple):
+    @staticmethod
+    def parse_header(line: tuple):
         """ Parses a function header. """
         index = line[0]
         indent = line[1]
@@ -634,7 +656,8 @@ class _Parser:
             {'type': 'function', 'name': name, 'parameters': params}
         ]
 
-    def parse_import(self, line: tuple):
+    @staticmethod
+    def parse_import(line: tuple):
         """ Parses an import statement. """
         try:
             import_ = line[2].split()[1]
@@ -646,7 +669,8 @@ class _Parser:
             {'type': 'import', 'name': import_}
         ]
 
-    def parse_delete(self, line: tuple):
+    @staticmethod
+    def parse_delete(line: tuple):
         """ Parses a delete statement """
         try:
             delete_ = line[2].split()[1]
@@ -669,7 +693,7 @@ class _Parser:
             # Parameter parsing
             params = self.parse_args(params, index)
         else:
-            ins, params = text, None
+            ins, params = text, []
 
         return [
             index, indent,
@@ -677,7 +701,7 @@ class _Parser:
         ]
 
     def parse_assignment(self, line):
-        """ Parses an assigment. """
+        """ Parses an assignment. """
         index = line[0]
         indent = line[1]
         text = line[2]
@@ -720,7 +744,7 @@ class _Parser:
 def parse(lines: list, **kw):
     """ Parses the code and returns a JSON serializable data
     object which works as the code.
-    :param lines: The lines of code, prefferably coming from
-     f.readlines() """
+    :param lines: The lines of code, preferably coming from
+    f.readlines() """
 
     return _Parser(lines, **kw).render()
