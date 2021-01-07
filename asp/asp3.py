@@ -55,7 +55,7 @@ library.
   of statements (list of dicts).
 
 """
-from . import apt
+from asp import apt
 import datetime
 import re
 
