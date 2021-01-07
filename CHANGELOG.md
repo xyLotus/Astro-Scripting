@@ -93,3 +93,8 @@ Change Log: (See Interpreter)
 * 0.1.5
     -- Call Statement Method Changes --
     - Different return type when statement parameter type is 'elm'
+
+* 0.1.6
+    -- Array Index Access Variable Handling --
+    - You can now set a variable to "sample_array[1]" and it wi
+      -ll hold the value of the given array index
