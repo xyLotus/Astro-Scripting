@@ -1,7 +1,7 @@
 ''' ASX Interpreting / Execution '''
 
 __author__ = 'Lotus'
-__version__ = '0.1.5'
+__version__ = '0.1.6'
 
 try:
     # Core Imports
@@ -189,10 +189,24 @@ class Interpreter:
     def _exec_wait(self, time): # wait statement execution function
         sleep(time)
 
-    def assign_variable(self, statement, inside_function: bool, func_name: str): # Variable AMM Snippet used @ Interpret Method
+    def assign_variable(self, statement: dict, inside_function: bool, func_name: str, elm_spec: bool = False): # Variable AMM Snippet used @ Interpret Method
         if inside_function:
             variable_name = statement["var"]
-            variable_value = statement['params']
+            print(variable_name, ' <- var name')
+            if elm_spec:
+                variable_spec = statement['params'][1]['var']
+                _location = statement['params'][1]['element']
+                try:
+                    variable_value = function_variable_storage[func_name][variable_spec][1][_location]
+                except Exception as e:
+                    error_out(f'Variable "{variable_name}" is not defined', undef_var)
+                    try:
+                        variable_value = variable_storage[variable_spec][1][_location]
+                    except Exception as ex:
+                        error_out(f'Variable "{variable_name}" is not defined', undef_var)
+            else:
+                variable_value = statement['params']
+            print(variable_value, ' <- var val')
             self.memory.store_func_variable(
                                             function_name=func_name,
                                             variable=variable_name,
@@ -200,7 +214,17 @@ class Interpreter:
                                            )
         else:
             variable_name = statement['var']
-            variable_value = statement['params']
+
+            if elm_spec:
+                variable_spec = statement['params'][1]['var']
+                _location = statement['params'][1]['element']
+                try:
+                    variable_value = variable_storage[variable_spec][1][_location]
+                except Exception:
+                    error_out(f'Variable "{variable_name}" is not defined', undef_var)
+            else:
+                variable_value = statement['params']
+                            
             self.memory.store_variable(variable=variable_name, value=variable_value)
 
     def assign_function(self, statement: dict, func_name: str):
@@ -233,6 +257,7 @@ class Interpreter:
         parameter_name = statement['params'][0][1]  # Parameter Name Handle                          
         
         if parameter_type == 'elm':
+
             parameter_name = statement['params'][0][1]['var']
         
         if inside_function:
@@ -298,7 +323,15 @@ class Interpreter:
             # print('Statement: ', statement)
             ### AMM | Variable Storage ###
             if statement['type'] == 'assignment':
-                self.assign_variable(statement=statement, inside_function=in_function, func_name=function_name) # AMM | Storing Variables
+                try:
+                    if statement['params'][0] == 'elm':
+                        self.assign_variable(statement=statement, inside_function=in_function, func_name=function_name, elm_spec=True) # AMM | Storing Variables
+                    else:
+                        self.assign_variable(statement=statement, inside_function=in_function, func_name=function_name) # AMM | Storing Variables
+                except KeyError as E:
+                    print(E)
+                except IndexError as E: 
+                    print(E)
 
             ### AMM | Function Content & Parameter Name Storage ### 
             elif statement['type'] == 'function': 
@@ -344,5 +377,5 @@ Interpreter = Interpreter(
 math = Math()
 
 Interpreter.interpret(source=Interpreter.content, in_function=False) # Main Interpreting Method
-# print('\n\n\nVariable Storage: ', variable_storage)
+print('\n\n\nVariable Storage: ', variable_storage)
  
