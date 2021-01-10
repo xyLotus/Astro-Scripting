@@ -55,12 +55,12 @@ library.
   of statements (list of dicts).
 
 """
-from asp import apt
+import apt
 import datetime
 import re
 
 __author__ = 'bellrise'
-__version__ = '3.5.3'
+__version__ = '3.5.4'
 
 # This is the format version of the code object generated
 # by the parser, each new format is most probably incompatible
@@ -240,11 +240,11 @@ class _Parser:
                 # Assignment statement
                 r'^[_A-z][_A-z0-9]* *= *.*': self.parse_assignment,
 
+                # Function call statement
+                r'^[_A-z][_A-z0-9]*\(.*\)': self.parse_call,
+
                 # Regular base statement
                 r'^[_A-z][_A-z0-9]*.*': self.parse_statement,
-
-                # Function call statement
-                r'^[_A-z][_A-z0-9]*\(.*\)$': self.parse_call,
 
                 # Mixin
                 r'^@mixin .*': self.parse_mixin,
